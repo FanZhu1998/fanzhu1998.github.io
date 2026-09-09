@@ -1,0 +1,814 @@
+<!DOCTYPE html>
+<html lang="en" prefix="og: https://ogp.me/ns#">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Fan Zhu — Quantitative Portfolio Management &amp; Research</title>
+<meta name="description" content="Fan Zhu is an Associate Portfolio Manager at Parametric Portfolio Associates (Morgan Stanley), working on systematic equity SMAs. MS Statistical Science, Duke University. Research on market-regime forecasting with correlation networks and machine learning.">
+<meta name="author" content="Fan Zhu">
+<meta name="theme-color" content="#080e18">
+<link rel="canonical" href="https://fanzhu1998.github.io/">
+
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://fanzhu1998.github.io/">
+<meta property="og:title" content="Fan Zhu — Quantitative Portfolio Management &amp; Research">
+<meta property="og:description" content="Associate Portfolio Manager at Parametric (Morgan Stanley). Systematic equity SMAs, PM-facing Python analytics, and research on market-regime forecasting with correlation networks.">
+<meta name="twitter:card" content="summary_large_image">
+
+<link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Inter:wght@400..700&family=Libre+Franklin:wght@300..800&display=swap">
+<link rel="stylesheet" href="assets/css/style.css">
+
+<script>
+  /* Set the theme before first paint so there is no flash. */
+  (function () {
+    try {
+      var t = localStorage.getItem("fz-theme");
+      if (!t) t = window.matchMedia("(prefers-color-scheme: light)").matches ? "light" : "dark";
+      document.documentElement.setAttribute("data-theme", t);
+    } catch (e) {
+      document.documentElement.setAttribute("data-theme", "dark");
+    }
+  })();
+</script>
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Person",
+  "name": "Fan Zhu",
+  "url": "https://fanzhu1998.github.io/",
+  "jobTitle": "Associate Portfolio Manager",
+  "worksFor": { "@type": "Organization", "name": "Parametric Portfolio Associates (Morgan Stanley)" },
+  "alumniOf": [
+    { "@type": "CollegeOrUniversity", "name": "Duke University" },
+    { "@type": "CollegeOrUniversity", "name": "University of North Carolina at Chapel Hill" }
+  ],
+  "knowsAbout": [
+    "Systematic equity portfolio construction", "Portfolio optimization", "Tax-aware investing",
+    "Quantitative research", "Machine learning", "Network analysis", "Risk analytics"
+  ],
+  "sameAs": [
+    "https://www.linkedin.com/in/fan-zhu-econ/",
+    "https://github.com/FanZhu1998"
+  ],
+  "subjectOf": {
+    "@type": "Thesis",
+    "name": "Market Regime Forecasting using Correlation Networks and Machine Learning Classifiers",
+    "url": "https://cdr.lib.unc.edu/concern/honors_theses/4q77fx68r?locale=en",
+    "datePublished": "2020-05"
+  }
+}
+</script>
+</head>
+<body>
+
+<a class="skip" href="#main">Skip to content</a>
+
+<header class="nav">
+  <div class="nav__inner">
+    <a class="brand" href="#top"><span class="brand__mark">FZ</span> Fan&nbsp;Zhu</a>
+
+    <nav aria-label="Primary">
+      <ul class="nav__links" id="nav-links">
+        <li><a href="#about">About</a></li>
+        <li><a href="#experience">Experience</a></li>
+        <li><a href="#research">Research</a></li>
+        <li><a href="#building">Building</a></li>
+        <li><a href="#toolkit">Toolkit</a></li>
+        <li><a href="#contact">Contact</a></li>
+      </ul>
+    </nav>
+
+    <div class="nav__actions">
+      <button class="icon-btn" data-theme-toggle type="button" aria-label="Switch theme" aria-pressed="false">
+        <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+        <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="4.2"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>
+      </button>
+      <button class="icon-btn nav__toggle" data-menu-toggle type="button" aria-label="Menu" aria-expanded="false" aria-controls="nav-links">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M3 7h18M3 12h18M3 17h18"/></svg>
+      </button>
+    </div>
+  </div>
+</header>
+
+<main id="main">
+
+<!-- ===================== HERO ===================== -->
+<section class="hero" id="top">
+  <canvas id="network" aria-hidden="true"></canvas>
+
+  <div class="hero__inner wrap">
+    <p class="hero__eyebrow">
+      <span>Systematic Equity</span><span class="dot">/</span>
+      <span>Quantitative Research</span><span class="dot">/</span>
+      <span>Applied ML</span>
+    </p>
+
+    <h1 class="hero__name">Fan <em>Zhu</em></h1>
+
+    <p class="hero__sub">
+      Associate Portfolio Manager at <strong>Parametric Portfolio Associates</strong> (Morgan Stanley).
+      I work on systematic equity SMAs &mdash; portfolio construction, rebalancing, and the
+      Python analytics our team uses to run them day to day.
+    </p>
+
+    <div class="hero__cta">
+      <a class="btn btn--primary" href="#research">
+        Read the research
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+      </a>
+      <a class="btn btn--ghost" href="#contact">Get in touch</a>
+    </div>
+
+    <div class="stats">
+      <div class="stat">
+        <div class="stat__val">$9Bn+</div>
+        <div class="stat__lab">Systematic equity SMAs<br>I help manage</div>
+      </div>
+      <div class="stat">
+        <div class="stat__val">400+</div>
+        <div class="stat__lab">Benchmarks<br>monitored daily</div>
+      </div>
+      <div class="stat">
+        <div class="stat__val">70%</div>
+        <div class="stat__lab">Credit memo drafting<br>time saved (prototype)</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="scroll-cue" aria-hidden="true">Scroll</div>
+</section>
+
+<!-- ===================== ABOUT ===================== -->
+<section class="section section--alt" id="about">
+  <div class="wrap">
+    <div class="section__head reveal">
+      <p class="eyebrow" data-auto>About</p>
+      <h2>Between the <em>model</em> and the <em>trade</em>.</h2>
+      <p class="lede">
+        An optimizer result only becomes a portfolio once it clears tax lots, client
+        restrictions, corporate actions and a transaction cost budget. Closing that gap is
+        most of my job, and it is why I spend about as much time writing code as running
+        analysis.
+      </p>
+    </div>
+
+    <div class="grid-3">
+      <article class="card reveal">
+        <p class="card__num" data-auto></p>
+        <h3>Portfolio Construction</h3>
+        <p>
+          Building and rebalancing custom core SMAs against client-specific benchmarks,
+          balancing tracking error, tax impact and transaction costs against the constraints
+          in each mandate. Scenario analysis on flows, rebalances and benchmark changes,
+          written up so advisors can act on it.
+        </p>
+      </article>
+
+      <article class="card reveal">
+        <p class="card__num" data-auto></p>
+        <h3>Quantitative Research</h3>
+        <p>
+          Network analysis and machine learning applied to market structure. My undergraduate
+          honors thesis forecast bull/bear regimes from the topology of industry correlation
+          networks. The habit stuck: look for the structure first, then test carefully whether
+          it predicts anything.
+        </p>
+      </article>
+
+      <article class="card reveal">
+        <p class="card__num" data-auto></p>
+        <h3>Systems &amp; AI</h3>
+        <p>
+          Python applications used in daily PM workflows, plus the data-integrity checks
+          behind 400+ benchmarks. Selected as an AI Ambassador at Parametric, where I help
+          colleagues adopt AI tools and build their own.
+        </p>
+      </article>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== EXPERIENCE ===================== -->
+<section class="section" id="experience">
+  <div class="wrap">
+    <div class="section__head reveal">
+      <p class="eyebrow" data-auto>Experience</p>
+      <h2>From <em class="lo">risk analytics</em> to <em>portfolio construction</em>.</h2>
+      <p class="lede">
+        I started where risk numbers are produced, learned what breaks them, and moved to the
+        desk that has to act on them. Each step has taken me closer to the investment decision
+        itself &mdash; from measuring exposure, to building the portfolios that carry it, toward
+        the quantitative research and systematic trading I want to work on next.
+      </p>
+    </div>
+
+    <div class="tl">
+
+      <article class="tl__item tl__item--now reveal">
+        <div class="tl__meta">
+          <span class="tl__date">May 2025 &mdash; Present</span>
+          <span class="tl__loc">Atlanta, GA</span>
+        </div>
+        <h3 class="tl__role">Associate Portfolio Manager</h3>
+        <p class="tl__org"><strong>Parametric Portfolio Associates</strong> &middot; Morgan Stanley Investment Management</p>
+        <p class="tl__desc">
+          Construct and rebalance <strong>$9Bn+</strong> of systematic equity custom core SMAs
+          against client-specific benchmarks, trading tracking error against tax and transaction
+          costs. Build the PM-facing Python analytics and the data-integrity layer under
+          <strong>400+ benchmarks</strong>.
+        </p>
+      </article>
+
+      <article class="tl__item reveal">
+        <div class="tl__meta">
+          <span class="tl__date">Jun 2024 &mdash; May 2025</span>
+          <span class="tl__loc">New York, NY</span>
+        </div>
+        <h3 class="tl__role">Associate, Risk COO</h3>
+        <p class="tl__org"><strong>Morgan Stanley</strong></p>
+        <p class="tl__desc">
+          Daily <strong>Rates and FX sensitivity analysis</strong>: risk-engine output aggregated
+          under a delta&ndash;gamma approximation to estimate scenario PnL across market
+          environments. Built the Python and SQL pipelines that monitored those sensitivities
+          against limits.
+        </p>
+      </article>
+
+      <article class="tl__item reveal">
+        <div class="tl__meta">
+          <span class="tl__date">Jun 2022 &mdash; May 2024</span>
+          <span class="tl__loc">New York, NY</span>
+        </div>
+        <h3 class="tl__role">Analyst, Risk COO</h3>
+        <p class="tl__org"><strong>Morgan Stanley</strong></p>
+        <p class="tl__desc">
+          Portfolio analytics and reporting across a <strong>$200Bn+</strong> lending portfolio in
+          SQL, Python, R and VBA, including the error-checking routines behind senior management
+          reporting.
+        </p>
+      </article>
+
+    </div>
+  </div>
+</section>
+
+<!-- ===================== RESEARCH ===================== -->
+<section class="section section--alt" id="research">
+  <div class="wrap">
+    <div class="section__head reveal">
+      <p class="eyebrow" data-auto>Research</p>
+      <h2>Market structure, and what actually <em>predicts</em>.</h2>
+      <p class="lede">
+        Work on market structure, machine learning and portfolio construction. The honors thesis
+        below asked whether the topology of an industry correlation network carries a forecastable
+        signal about the market regime that follows it &mdash; at short horizons it appears to,
+        over longer ones the signal largely disappears. New work is added here as it is finished.
+      </p>
+    </div>
+
+    <article class="paper reveal">
+      <div class="paper__head">
+        <p class="paper__venue">Honors Thesis &middot; UNC Chapel Hill Economics &middot; May 2020</p>
+        <h3 class="paper__title">Market Regime Forecasting using Correlation Networks and Machine Learning Classifiers</h3>
+        <p class="paper__authors">
+          Dr.&nbsp;Michael Aguilar &amp; <strong>Fan Zhu</strong>
+          &nbsp;&middot;&nbsp; Faculty advisor: Dr.&nbsp;Jane Fruehwirth
+          &nbsp;&middot;&nbsp; Graduated with Highest Honors
+        </p>
+        <p class="paper__abstract">
+          Historical U.S. equity returns are partitioned into bull and bear markets using a
+          top-down turning-point algorithm. For each regime a correlation network is built over the
+          49 Fama&ndash;French industry portfolios, reduced to a minimum spanning tree, and summarised
+          by its topological features. Those features &mdash; degree distribution, in-component degree,
+          Kruskal stress and density, alongside the moments of S&amp;P 500 returns &mdash; are fed to a
+          bank of machine learning classifiers under 10-fold cross-validation. Across 16
+          combinations of estimation window and forecast lag, a Fine Tree on 1-month windows
+          forecasting one week ahead reaches <strong>91.7%</strong> accuracy; over longer horizons a
+          Kernel Naive Bayes on 3-month windows at a 12-month lag holds <strong>66.7%</strong>.
+        </p>
+
+        <p class="paper__link">
+          <a href="https://cdr.lib.unc.edu/concern/honors_theses/4q77fx68r?locale=en" rel="noopener" target="_blank">
+            Read the full thesis &mdash; Carolina Digital Repository
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 17 17 7M9 7h8v8"/></svg>
+          </a>
+        </p>
+      </div>
+
+      <div class="paper__body">
+
+        <div class="stats" style="margin-bottom: 2.5rem;">
+          <div class="stat">
+            <div class="stat__val">91.7%</div>
+            <div class="stat__lab">Best accuracy<br>1 week ahead</div>
+          </div>
+          <div class="stat">
+            <div class="stat__val">0.92</div>
+            <div class="stat__lab">AUC<br>Fine Tree model</div>
+          </div>
+          <div class="stat">
+            <div class="stat__val">53</div>
+            <div class="stat__lab">Correlation networks<br>constructed</div>
+          </div>
+          <div class="stat">
+            <div class="stat__val">41 yrs</div>
+            <div class="stat__lab">Daily data<br>1978&ndash;2019</div>
+          </div>
+        </div>
+
+        <p class="eyebrow" style="margin-bottom:1.25rem;">Method</p>
+        <div class="method">
+          <div class="method__step">
+            <p class="method__n">STEP 01</p>
+            <p class="method__t">Partition the regimes</p>
+            <p class="method__d">Hanna's top-down turning-point algorithm over daily S&amp;P 500 prices, 1978&ndash;2019: 30 bull, 26 bear, 5 rallies, 7 corrections.</p>
+          </div>
+          <div class="method__step">
+            <p class="method__n">STEP 02</p>
+            <p class="method__t">Correlate the industries</p>
+            <p class="method__d">Within each regime window, the Pearson correlation matrix over daily log returns of the 49 Fama&ndash;French industry portfolios.</p>
+          </div>
+          <div class="method__step">
+            <p class="method__n">STEP 03</p>
+            <p class="method__t">Build the tree</p>
+            <p class="method__d">Correlations become Euclidean distances, d<sub>ij</sub> = &radic;(2(1&minus;C<sub>ij</sub>)), reduced to a minimum spanning tree scored by Kruskal stress-1.</p>
+          </div>
+          <div class="method__step">
+            <p class="method__n">STEP 04</p>
+            <p class="method__t">Extract topology</p>
+            <p class="method__d">Degree distribution, in-component degree, stress and density per network &mdash; plus the standard deviation, kurtosis and range of market returns.</p>
+          </div>
+          <div class="method__step">
+            <p class="method__n">STEP 05</p>
+            <p class="method__t">Classify &amp; validate</p>
+            <p class="method__d">Trees, KNN, SVM, ensembles and Naive Bayes across 16 window&times;lag combinations, each under 10-fold cross-validation.</p>
+          </div>
+        </div>
+
+        <div class="grid-2">
+
+          <!-- FIGURE 1 — accuracy heatmap -->
+          <figure class="figure" style="margin:0;">
+            <figcaption>
+              <p class="figure__title">Forecast accuracy by estimation window and lag</p>
+              <p class="figure__sub">
+                Sixteen model configurations, best classifier per cell. The signal is concentrated:
+                only the shortest horizon breaks meaningfully away from chance.
+              </p>
+            </figcaption>
+
+            <div class="figure__scroll">
+              <div class="hm" role="img" aria-label="Heatmap of forecast accuracy across four estimation windows and four forecast lags. The highest value is 91.7 percent, at a 1-month window with a 1-week lag. All other configurations fall between 52.1 and 77.1 percent. Full values are available in the data table below.">
+
+                <div class="hm__row">
+                  <div class="hm__corner">Window &darr; / Lag &rarr;</div>
+                  <div class="hm__colhead">Shortest</div>
+                  <div class="hm__colhead">&nbsp;</div>
+                  <div class="hm__colhead">&nbsp;</div>
+                  <div class="hm__colhead">Longest</div>
+                </div>
+
+                <div class="hm__row">
+                  <div class="hm__rowhead">1-month<br>window</div>
+                  <div class="hm__cell is-best" style="background:var(--r7);color:var(--r-ink-hi)" title="1-month window, 1-week lag — Fine Tree — 91.7%"><span class="hm__v">91.7%</span><span class="hm__m">1-week</span></div>
+                  <div class="hm__cell" style="background:var(--r5);color:var(--r-ink-hi)" title="1-month window, 2-week lag — Cosine KNN — 77.1%"><span class="hm__v">77.1%</span><span class="hm__m">2-week</span></div>
+                  <div class="hm__cell" style="background:var(--r3);color:var(--r-ink-lo)" title="1-month window, 3-week lag — Subspace Discriminant — 62.5%"><span class="hm__v">62.5%</span><span class="hm__m">3-week</span></div>
+                  <div class="hm__cell" style="background:var(--r3);color:var(--r-ink-lo)" title="1-month window, 4-week lag — Naive Bayes — 62.5%"><span class="hm__v">62.5%</span><span class="hm__m">4-week</span></div>
+                </div>
+
+                <div class="hm__row">
+                  <div class="hm__rowhead">3-month<br>window</div>
+                  <div class="hm__cell" style="background:var(--r3);color:var(--r-ink-lo)" title="3-month window, 1-month lag — Fine Tree — 62.5%"><span class="hm__v">62.5%</span><span class="hm__m">1-month</span></div>
+                  <div class="hm__cell" style="background:var(--r2);color:var(--r-ink-lo)" title="3-month window, 3-month lag — Boosted Tree — 52.1%"><span class="hm__v">52.1%</span><span class="hm__m">3-month</span></div>
+                  <div class="hm__cell" style="background:var(--r3);color:var(--r-ink-lo)" title="3-month window, 6-month lag — Linear Discriminant — 58.3%"><span class="hm__v">58.3%</span><span class="hm__m">6-month</span></div>
+                  <div class="hm__cell" style="background:var(--r4);color:var(--r-ink-lo)" title="3-month window, 12-month lag — Kernel Naive Bayes — 66.7%"><span class="hm__v">66.7%</span><span class="hm__m">12-month</span></div>
+                </div>
+
+                <div class="hm__row">
+                  <div class="hm__rowhead">6-month<br>window</div>
+                  <div class="hm__cell" style="background:var(--r4);color:var(--r-ink-lo)" title="6-month window, 1-month lag — Linear Discriminant — 64.2%"><span class="hm__v">64.2%</span><span class="hm__m">1-month</span></div>
+                  <div class="hm__cell" style="background:var(--r2);color:var(--r-ink-lo)" title="6-month window, 3-month lag — Cubic SVM — 54.7%"><span class="hm__v">54.7%</span><span class="hm__m">3-month</span></div>
+                  <div class="hm__cell" style="background:var(--r3);color:var(--r-ink-lo)" title="6-month window, 6-month lag — Fine Tree — 58.3%"><span class="hm__v">58.3%</span><span class="hm__m">6-month</span></div>
+                  <div class="hm__cell" style="background:var(--r2);color:var(--r-ink-lo)" title="6-month window, 12-month lag — Coarse KNN — 52.1%"><span class="hm__v">52.1%</span><span class="hm__m">12-month</span></div>
+                </div>
+
+                <div class="hm__row">
+                  <div class="hm__rowhead">12-month<br>window</div>
+                  <div class="hm__cell" style="background:var(--r2);color:var(--r-ink-lo)" title="12-month window, 1-month lag — Coarse Gaussian SVM — 54.7%"><span class="hm__v">54.7%</span><span class="hm__m">1-month</span></div>
+                  <div class="hm__cell" style="background:var(--r2);color:var(--r-ink-lo)" title="12-month window, 3-month lag — Coarse KNN — 52.8%"><span class="hm__v">52.8%</span><span class="hm__m">3-month</span></div>
+                  <div class="hm__cell" style="background:var(--r2);color:var(--r-ink-lo)" title="12-month window, 6-month lag — RUSBoosted Tree — 54.2%"><span class="hm__v">54.2%</span><span class="hm__m">6-month</span></div>
+                  <div class="hm__cell" style="background:var(--r2);color:var(--r-ink-lo)" title="12-month window, 12-month lag — Coarse KNN — 52.1%"><span class="hm__v">52.1%</span><span class="hm__m">12-month</span></div>
+                </div>
+
+              </div>
+            </div>
+
+            <div class="legend">
+              <span>52%</span>
+              <span class="legend__ramp" aria-hidden="true">
+                <span style="background:var(--r2)"></span><span style="background:var(--r3)"></span><span style="background:var(--r4)"></span><span style="background:var(--r5)"></span><span style="background:var(--r6)"></span><span style="background:var(--r7)"></span>
+              </span>
+              <span>92% accuracy</span>
+            </div>
+
+            <details class="tablewrap">
+              <summary>Data table</summary>
+              <table class="data">
+                <caption class="visually-hidden">Forecast accuracy and best classifier by estimation window and forecast lag</caption>
+                <thead>
+                  <tr><th scope="col">Window</th><th scope="col">Lag</th><th scope="col">Accuracy</th><th scope="col">Best model</th></tr>
+                </thead>
+                <tbody>
+                  <tr class="is-best"><td>1 month</td><td>1 week</td><td>91.7%</td><td>Fine Tree</td></tr>
+                  <tr><td>1 month</td><td>2 weeks</td><td>77.1%</td><td>Cosine KNN</td></tr>
+                  <tr><td>1 month</td><td>3 weeks</td><td>62.5%</td><td>Subspace Discriminant</td></tr>
+                  <tr><td>1 month</td><td>4 weeks</td><td>62.5%</td><td>Naive Bayes</td></tr>
+                  <tr><td>3 months</td><td>1 month</td><td>62.5%</td><td>Fine Tree</td></tr>
+                  <tr><td>3 months</td><td>3 months</td><td>52.1%</td><td>Boosted Tree</td></tr>
+                  <tr><td>3 months</td><td>6 months</td><td>58.3%</td><td>Linear Discriminant</td></tr>
+                  <tr><td>3 months</td><td>12 months</td><td>66.7%</td><td>Kernel Naive Bayes</td></tr>
+                  <tr><td>6 months</td><td>1 month</td><td>64.2%</td><td>Linear Discriminant</td></tr>
+                  <tr><td>6 months</td><td>3 months</td><td>54.7%</td><td>Cubic SVM</td></tr>
+                  <tr><td>6 months</td><td>6 months</td><td>58.3%</td><td>Fine Tree</td></tr>
+                  <tr><td>6 months</td><td>12 months</td><td>52.1%</td><td>Coarse KNN</td></tr>
+                  <tr><td>12 months</td><td>1 month</td><td>54.7%</td><td>Coarse Gaussian SVM</td></tr>
+                  <tr><td>12 months</td><td>3 months</td><td>52.8%</td><td>Coarse KNN</td></tr>
+                  <tr><td>12 months</td><td>6 months</td><td>54.2%</td><td>RUSBoosted Tree</td></tr>
+                  <tr><td>12 months</td><td>12 months</td><td>52.1%</td><td>Coarse KNN</td></tr>
+                </tbody>
+              </table>
+            </details>
+
+            <p class="figure__note">
+              Accuracy under 10-fold cross-validation. Rallies and corrections were excluded from
+              training &mdash; too few observations for a valid sample &mdash; so the task is a bull/bear
+              binary.
+            </p>
+          </figure>
+
+          <!-- FIGURE 2 — confusion matrix -->
+          <figure class="figure" style="margin:0;">
+            <figcaption>
+              <p class="figure__title">Where the winning model gets it right</p>
+              <p class="figure__sub">
+                Fine Tree, 1-month window, 1-week lag. Four misclassifications out of 48 regimes,
+                split evenly between the two error types.
+              </p>
+            </figcaption>
+
+            <div class="figure__scroll">
+              <div class="cm" role="img" aria-label="Confusion matrix for the Fine Tree model. True bear: 21 predicted bear, 2 predicted bull. True bull: 2 predicted bear, 23 predicted bull. Values are repeated in the data table below.">
+                <div class="cm__lab"></div>
+                <div class="cm__lab">Predicted<br>bear</div>
+                <div class="cm__lab">Predicted<br>bull</div>
+
+                <div class="cm__lab">True<br>bear</div>
+                <div class="cm__cell" style="background:var(--r7);color:var(--r-ink-hi)"><span class="cm__n">21</span><span class="cm__t">Correct</span></div>
+                <div class="cm__cell" style="background:var(--r2);color:var(--r-ink-lo)"><span class="cm__n">2</span><span class="cm__t">Missed</span></div>
+
+                <div class="cm__lab">True<br>bull</div>
+                <div class="cm__cell" style="background:var(--r2);color:var(--r-ink-lo)"><span class="cm__n">2</span><span class="cm__t">Missed</span></div>
+                <div class="cm__cell" style="background:var(--r7);color:var(--r-ink-hi)"><span class="cm__n">23</span><span class="cm__t">Correct</span></div>
+              </div>
+            </div>
+
+            <details class="tablewrap">
+              <summary>Data table</summary>
+              <table class="data">
+                <thead>
+                  <tr><th scope="col">Actual</th><th scope="col">Predicted bear</th><th scope="col">Predicted bull</th></tr>
+                </thead>
+                <tbody>
+                  <tr><td>Bear</td><td>21</td><td>2</td></tr>
+                  <tr><td>Bull</td><td>2</td><td>23</td></tr>
+                </tbody>
+              </table>
+            </details>
+
+            <p class="figure__note">
+              For context, Kole &amp; Dijk (2010) forecast the same one-week-ahead bull/bear call with
+              Markovian logit models at 89.3%. This model reaches 91.7% with an AUC of 0.92 &mdash; on
+              48 regime observations, so the difference sits well inside the noise.
+            </p>
+          </figure>
+
+        </div>
+
+        <p class="figure__note" style="border-top:0;padding-top:1.75rem;">
+          <strong style="color:var(--ink)">Honest limitations.</strong> The MST minimisation criterion did not
+          fully converge, so the trees may not be the most efficient representation of each network;
+          and several algorithm-partitioned regimes are only days long &mdash; artefacts of black-swan
+          events sitting too close to the following rally to be separately forecastable. Both are
+          named in the paper as the first things to fix. With 48 regimes in the sample, the
+          accuracy figures carry wide error bars either way.
+        </p>
+      </div>
+    </article>
+
+    <!-- ==================================================================
+         ADDING NEW RESEARCH — copy one <article class="entry"> block below,
+         paste it at the TOP of this list, and edit the text. Nothing else
+         needs changing: the section number, the reveal animation and the
+         scroll-spy all pick it up on their own.
+
+         Required : .entry__meta, .entry__title
+         Optional : .entry__authors, .entry__desc, .entry__links, .tags
+                    — delete any line the entry does not need.
+
+         <article class="entry reveal">
+           <p class="entry__meta">Working paper &middot; Venue &middot; Month Year</p>
+           <h3 class="entry__title">Title of the paper</h3>
+           <p class="entry__authors">Co-author names &middot; <strong>Fan Zhu</strong></p>
+           <p class="entry__desc">One paragraph: the question, the method, the finding.</p>
+           <p class="entry__links">
+             <a href="URL" rel="noopener" target="_blank">
+               Read the paper
+               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                    stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 17 17 7M9 7h8v8"/></svg>
+             </a>
+           </p>
+           <div class="tags"><span class="tag">Topic</span></div>
+         </article>
+
+         A piece that warrants the full treatment — figures, method steps, a
+         data table — should instead be built as <article class="paper">,
+         using the thesis above as the model.
+         ================================================================== -->
+    <div class="entries">
+
+      <article class="entry reveal">
+        <p class="entry__meta">Applied research &middot; Parametric Portfolio Associates</p>
+        <h3 class="entry__title">Scenario summarisation for PM&ndash;advisor communication</h3>
+        <p class="entry__desc">
+          Recurring trade and portfolio-analysis scenarios &mdash; security flows, rebalances,
+          benchmark reconstitutions, tax-loss activity &mdash; summarised with an LLM copilot and
+          clustered into a categorised template library. The work is in the categorisation: which
+          scenarios recur often enough, and are distinct enough from one another, to earn their own
+          template. Portfolio-manager correspondence to financial advisors then starts from a
+          scenario-matched draft carrying the relevant risk and tax diagnostics rather than from a
+          blank page.
+        </p>
+        <div class="tags">
+          <span class="tag">LLM Summarisation</span>
+          <span class="tag">Scenario Taxonomy</span>
+          <span class="tag">PM &harr; Advisor Comms</span>
+        </div>
+      </article>
+
+      <article class="entry reveal">
+        <p class="entry__meta">Applied research &middot; Morgan Stanley GenAI Hackathon</p>
+        <h3 class="entry__title">LLM framework for fundamental credit risk</h3>
+        <p class="entry__desc">
+          Co-authored at the Morgan Stanley firmwide GenAI Hackathon: generate text embeddings
+          from 10-K filings, surface the fundamentals that matter to a credit view, and automate
+          the first draft of the credit memo. Drafting time fell by about 70% in the hackathon
+          evaluation.
+        </p>
+        <div class="tags">
+          <span class="tag">LLM Embeddings</span>
+          <span class="tag">10-K Filings</span>
+          <span class="tag">Credit Memos</span>
+        </div>
+      </article>
+
+      <article class="entry reveal">
+        <p class="entry__meta">Academic &middot; Duke University</p>
+        <h3 class="entry__title">Teaching &amp; research assistantships</h3>
+        <p class="entry__desc">
+          Teaching Assistant for data science at Duke's Fuqua School of Business and the
+          Department of Statistical Science. Research Assistant at Duke's Center for Advanced
+          Hindsight, a behavioural economics lab.
+        </p>
+        <div class="tags">
+          <span class="tag">Duke Fuqua</span>
+          <span class="tag">Statistical Science</span>
+          <span class="tag">Behavioural Economics</span>
+        </div>
+      </article>
+
+    </div>
+
+  </div>
+</section>
+
+<!-- ===================== BUILDING ===================== -->
+<section class="section" id="building">
+  <div class="wrap">
+    <div class="section__head reveal">
+      <p class="eyebrow" data-auto>Building</p>
+      <h2>Tools that ended up in the <em>daily</em> workflow.</h2>
+      <p class="lede">
+        PM-facing Python applications I have built at Parametric. Small, specific tools that
+        run inside a live investment process and are maintained in shared repositories.
+      </p>
+    </div>
+
+    <div class="grid-3">
+
+      <article class="card reveal">
+        <p class="card__num" data-auto></p>
+        <h3>Scenario extraction</h3>
+        <p>
+          Rules-based extraction and validation of trading scenarios from structured advisor
+          notes &mdash; regex parsing with error handling, so an ambiguous instruction is flagged
+          rather than silently misread.
+        </p>
+        <div class="tags"><span class="tag">Python</span><span class="tag">Regex</span><span class="tag">Validation</span></div>
+      </article>
+
+      <article class="card reveal">
+        <p class="card__num" data-auto></p>
+        <h3>Reconstitution analytics</h3>
+        <p>
+          Benchmark reconstitution impact analysis &mdash; adds and drops, resulting turnover, and
+          which SMAs are affected &mdash; so rebalance work can be prioritised by impact rather than
+          by list order.
+        </p>
+        <div class="tags"><span class="tag">Index Events</span><span class="tag">Turnover</span><span class="tag">Prioritisation</span></div>
+      </article>
+
+      <article class="card reveal">
+        <p class="card__num" data-auto></p>
+        <h3>PM&ndash;advisor email generator</h3>
+        <p>
+          The shipped form of the scenario template library: portfolio-manager correspondence to
+          financial advisors, drafted from copilot-summarised, categorised templates matched to
+          the recurring trade and portfolio-analysis scenarios behind it.
+        </p>
+        <div class="tags"><span class="tag">LLM Summarisation</span><span class="tag">Templating</span></div>
+      </article>
+
+      <article class="card reveal">
+        <p class="card__num" data-auto></p>
+        <h3>Restriction consistency</h3>
+        <p>
+          Consistency checks across securities and screening groups using hash-table comparison,
+          catching restriction mismatches before they reach a portfolio that shouldn't hold
+          the name.
+        </p>
+        <div class="tags"><span class="tag">Hash Tables</span><span class="tag">Compliance</span><span class="tag">Screening</span></div>
+      </article>
+
+      <article class="card reveal">
+        <p class="card__num" data-auto></p>
+        <h3>Trade status reporting</h3>
+        <p>
+          A distributive trade status reporting system with automated scheduling and validation
+          checks, streamlining the communication loop between portfolio managers and traders on
+          what has actually filled.
+        </p>
+        <div class="tags"><span class="tag">Scheduling</span><span class="tag">Validation</span><span class="tag">PM &harr; Trader</span></div>
+      </article>
+
+      <article class="card reveal">
+        <p class="card__num" data-auto></p>
+        <h3>Market data integrity</h3>
+        <p>
+          Dashboards tracking ingestion across 400+ benchmarks, reconciling corporate actions
+          against Bloomberg, FactSet and Refinitiv. Not glamorous, but every rebalance
+          downstream depends on it.
+        </p>
+        <div class="tags"><span class="tag">Python</span><span class="tag">SQL</span><span class="tag">Corporate Actions</span></div>
+      </article>
+
+    </div>
+  </div>
+</section>
+
+<!-- ===================== TOOLKIT + EDUCATION ===================== -->
+<section class="section section--alt" id="toolkit">
+  <div class="wrap">
+    <div class="section__head reveal">
+      <p class="eyebrow" data-auto>Toolkit</p>
+      <h2>What I reach for.</h2>
+    </div>
+
+    <div class="kit reveal">
+      <div class="kit__row">
+        <div class="kit__cat">Languages</div>
+        <div class="kit__items">
+          <span class="tag">Python</span><span class="tag">SQL</span><span class="tag">R</span>
+          <span class="tag">MATLAB</span><span class="tag">VBA</span><span class="tag">CSS</span>
+        </div>
+      </div>
+      <div class="kit__row">
+        <div class="kit__cat">Portfolio &amp; Risk</div>
+        <div class="kit__items">
+          <span class="tag">Portfolio Optimization</span><span class="tag">Tracking Error</span>
+          <span class="tag">Tax-Loss Harvesting</span><span class="tag">Transaction Cost Analysis</span>
+          <span class="tag">Delta&ndash;Gamma Sensitivities</span><span class="tag">Scenario PnL</span>
+          <span class="tag">Benchmark Reconstitution</span>
+        </div>
+      </div>
+      <div class="kit__row">
+        <div class="kit__cat">ML &amp; Statistics</div>
+        <div class="kit__items">
+          <span class="tag">Classification</span><span class="tag">Ensemble Methods</span>
+          <span class="tag">Network Analysis</span><span class="tag">Cross-Validation</span>
+          <span class="tag">LLM Embeddings</span><span class="tag">Time Series</span>
+        </div>
+      </div>
+      <div class="kit__row">
+        <div class="kit__cat">Data &amp; Platforms</div>
+        <div class="kit__items">
+          <span class="tag">Bloomberg</span><span class="tag">FactSet</span><span class="tag">Refinitiv</span>
+          <span class="tag">Git / GitHub</span><span class="tag">Excel</span>
+          <span class="tag">Tableau</span><span class="tag">Power BI</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="section__head reveal" style="margin-top:clamp(4rem,9vw,7rem);">
+      <p class="eyebrow" data-auto>Education</p>
+      <h2>Statistics, economics, and a <em>psychology</em> habit.</h2>
+    </div>
+
+    <div class="grid-2">
+      <article class="card reveal">
+        <p class="card__num">/ MAY 2022</p>
+        <h3>MS, Statistical Science</h3>
+        <p style="color:var(--ink);font-weight:600;margin-bottom:0.75rem;">Duke University</p>
+        <p>
+          Teaching Assistant for data science courses at the Fuqua School of Business and the
+          Department of Statistical Science. Research Assistant at the Center for Advanced
+          Hindsight.
+        </p>
+      </article>
+
+      <article class="card reveal">
+        <p class="card__num">/ MAY 2020</p>
+        <h3>BA, Economics &mdash; Highest Honors</h3>
+        <p style="color:var(--ink);font-weight:600;margin-bottom:0.75rem;">University of North Carolina at Chapel Hill</p>
+        <p>
+          Second major in Psychology, minor in Mathematics. Graduated with Highest Distinction
+          and the <a href="https://econ.unc.edu/undergraduate/research/research-awards/" rel="noopener" target="_blank">Herbert Brown Mayo Financial Economics Research Fellowship</a>.
+        </p>
+      </article>
+    </div>
+
+    <div class="section__head reveal" style="margin-top:clamp(4rem,9vw,7rem);margin-bottom:2rem;">
+      <p class="eyebrow" data-auto>Off the desk</p>
+      <h2>Endurance, mostly.</h2>
+    </div>
+
+    <div class="stats reveal">
+      <div class="stat"><div class="stat__val">2025</div><div class="stat__lab">NYC Marathon<br>finisher</div></div>
+      <div class="stat"><div class="stat__val">2024</div><div class="stat__lab">Spartan Race<br>Trifecta medalist</div></div>
+      <div class="stat"><div class="stat__val">2023</div><div class="stat__lab">Savage Race<br>Syndicate medalist</div></div>
+    </div>
+
+  </div>
+</section>
+
+<!-- ===================== CONTACT ===================== -->
+<section class="section" id="contact">
+  <div class="wrap contact">
+    <div class="section__head reveal" style="margin-inline:auto;">
+      <p class="eyebrow" data-auto style="justify-content:center;">Contact</p>
+      <h2>Let's <em>talk</em>.</h2>
+      <p class="lede">
+        Happy to talk about systematic equity, quantitative research, or the engineering
+        behind either. Email is the fastest way to reach me.
+      </p>
+    </div>
+
+    <div class="contact__links reveal">
+      <a class="btn btn--primary" data-mail href="#contact">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2.5" y="4.5" width="19" height="15" rx="2"/><path d="M3 6l9 6 9-6"/></svg>
+        <span data-mail-text>Email</span>
+      </a>
+      <a class="btn btn--ghost" href="https://www.linkedin.com/in/fan-zhu-econ/" rel="me noopener" target="_blank">
+        <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M4.98 3.5a2.5 2.5 0 1 1 0 5 2.5 2.5 0 0 1 0-5zM3 9h4v12H3zM9 9h3.8v1.7h.05c.53-.95 1.83-1.95 3.76-1.95 4.02 0 4.76 2.5 4.76 5.76V21h-4v-5.3c0-1.27-.02-2.9-1.9-2.9-1.9 0-2.2 1.38-2.2 2.8V21H9z"/></svg>
+        LinkedIn
+      </a>
+      <a class="btn btn--ghost" href="https://github.com/FanZhu1998" rel="me noopener" target="_blank">
+        <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2C6.48 2 2 6.48 2 12c0 4.42 2.87 8.17 6.84 9.5.5.09.66-.22.66-.48v-1.7c-2.78.6-3.37-1.34-3.37-1.34-.45-1.16-1.11-1.47-1.11-1.47-.91-.62.07-.6.07-.6 1 .07 1.53 1.03 1.53 1.03.9 1.53 2.34 1.09 2.91.83.09-.65.35-1.09.63-1.34-2.22-.25-4.55-1.11-4.55-4.94 0-1.09.39-1.98 1.03-2.68-.1-.25-.45-1.27.1-2.65 0 0 .84-.27 2.75 1.02A9.6 9.6 0 0 1 12 6.8c.85 0 1.71.11 2.51.34 1.91-1.29 2.75-1.02 2.75-1.02.55 1.38.2 2.4.1 2.65.64.7 1.03 1.59 1.03 2.68 0 3.84-2.34 4.69-4.57 4.94.36.31.68.92.68 1.85v2.74c0 .27.16.58.67.48A10 10 0 0 0 22 12c0-5.52-4.48-10-10-10z"/></svg>
+        GitHub
+      </a>
+    </div>
+
+    <noscript>
+      <p class="lede" style="margin-top:2rem;">
+        Email: <strong>fanzhu1998 [at] gmail [dot] com</strong>
+      </p>
+    </noscript>
+  </div>
+</section>
+
+</main>
+
+<footer class="footer">
+  <div class="wrap footer__inner">
+    <span>&copy; <span id="year">2026</span> Fan Zhu</span>
+    <span>Built by hand with plain HTML, CSS and JavaScript.</span>
+  </div>
+</footer>
+
+<script src="assets/js/main.js" defer></script>
+<script src="assets/js/network.js" defer></script>
+</body>
+</html>
