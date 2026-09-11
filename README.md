@@ -1,7 +1,6 @@
 # fanzhu1998.github.io
 
-Personal site for **Fan Zhu** — Associate Portfolio Manager at Parametric Portfolio
-Associates (Morgan Stanley Investment Management).
+Personal site for **Fan Zhu** — Associate Portfolio Manager at an asset management firm.
 
 **Live:** https://fanzhu1998.github.io/
 
@@ -17,6 +16,10 @@ index.html               the whole site — one page, eight sections
 assets/css/style.css     design tokens + all styles (light & dark)
 assets/js/main.js        theme toggle, nav, scroll-spy, reveals, email assembly
 assets/js/network.js     hero canvas — live minimum spanning tree
+assets/js/viz-core.js    shared harness for canvas backgrounds (FZViz.mount)
+assets/js/frontier.js    about canvas — live mean-variance efficient frontier
+assets/js/sensitivity.js experience canvas — live delta-gamma sensitivity spider
+assets/js/volsurface.js  toolkit canvas — live SSVI implied volatility surface
 assets/favicon.svg       monogram + node-pair mark
 .nojekyll                serve files as-is, skip Jekyll processing
 ```
@@ -66,6 +69,344 @@ Nodes reaching degree ≥ 5 get labelled. At n = 49 a frame costs roughly ten
 thousand pair operations and about sixty canvas paths; the node count drops to 34
 and 24 on narrower screens. It pauses when scrolled out of view or when the tab is
 hidden, and renders a single settled frame under `prefers-reduced-motion`.
+
+## The about-section background
+
+The same idea as the hero, applied to the other half of the job: a live
+mean-variance efficient frontier, drawn full bleed behind "Between the model and
+the trade" the way the hero network is drawn behind the name. The canvas runs the
+whole section underneath, a scrim in the stylesheet knocks it back where the copy
+sits, and `.wrap` rides over both — the section is marked `.section--viz` and the
+layering, the scrim and the fade into the cards come with it.
+
+Eight assets carry returns from a two-factor covariance model,
+`Sigma = gamma * L L' + diag(delta^2)`, which is positive definite by
+construction — so the solve underneath it cannot blow up. Every frame it solves
+`Sigma [a b] = [1 mu]` by Gauss-Jordan and reads the closed form off the
+standard scalars:
+
+```
+A = 1'a,  B = 1'b,  C = mu'b,  D = AC - B^2
+sigma^2(m) = (A m^2 - 2B m + C) / D
+w(m)       = g + h m,   g = (C a - B b)/D,  h = (A b - B a)/D
+```
+
+So the curve is the exact minimum-variance hyperbola rather than a fitted one,
+and `w(m)` gives the **real weight vector** behind any point on it — which is
+what the scatter is built from. The weights are not drawn: moving along the
+curve is re-weighting the book, but a bar stack in the corner said that at the
+cost of the chart being minimal, and the chart is better off minimal.
+
+- The **upper branch is bright** because it is the part that is actually
+  efficient. The lower branch is dim because it is not.
+- The **scatter** is a fixed set of portfolios, each one a frontier portfolio at
+  some target return pushed off the curve by a fixed deviation. The deviation is
+  de-meaned, so weights still sum to one exactly, and a zero deviation lands on
+  the curve — which makes the frontier the scatter's true left boundary rather
+  than a line drawn near it. Sampling around equal weight instead never reaches
+  the low-return end and leaves the bullet with no nose.
+- The **tangency portfolio** is solved for against a drifting risk-free rate —
+  pinned below the minimum-variance return, so it always lands on the efficient
+  branch — and marked on the curve. The capital market line through it is
+  deliberately *not* drawn: a straight line cutting across the picture fights
+  the curve rather than supporting it.
+- Loadings, idiosyncratic variances, expected returns and the systemic weight
+  `gamma` all drift on slow incommensurate sines. As `gamma` rises the bullet
+  narrows and the frontier flattens — diversification stops paying, the same way
+  the hero network contracts toward one hub when correlations rise.
+
+The plot box runs past both the top and the right of the canvas, so the cloud
+bleeds off those edges instead of ending on hard cuts, and so the curve has room
+to spread horizontally — which is what makes its bend legible rather than leaving
+it a near-vertical climb. The travelling dot's sweep is capped at what is
+actually on screen, or it would spend part of every cycle out of sight.
+
+How much of each branch is shown decides what the silhouette reads as. The
+minimum-variance point is a *vertical tangent*, so showing the inefficient branch
+symmetrically turns the nose into a rounded protrusion; keeping it to a sliver
+(`mMv - 0.06 rng` against `mMv + 1.36 rng` above) leaves a frontier that rises
+out of the bottom left instead, which is both the more elegant shape and the one
+people actually draw. The upper bound is extended to compensate, so trimming the
+band does not stretch the curve vertically and steepen it.
+
+It is hidden below 760px, where the head and the cards use the full width and a
+canvas behind them buys nothing but battery. A `display: none` canvas never
+intersects, so the harness keeps it parked rather than animating behind nothing.
+
+**Cost.** The scatter is the only expensive part — a thousand-odd portfolios,
+each a K² quadratic form and a fill. It is rendered into an offscreen layer a few
+times a second rather than every frame, and blitted with an affine correction
+that maps the window it was drawn in onto the window showing now, so the cloud
+stays registered to the curve however the view drifts. Everything that has to be
+smooth — the curve, the dot and the comet — is a few dozen operations and runs
+every frame. Density follows the area on show, so a wide screen does not
+get a sparse dusting and a small one does not pay for points nobody sees.
+
+One trap worth naming, because it cost a round: the view window has a *target*
+and an *eased current value*, and they are deliberately separate. The target is
+only recomputed when the scatter is, a few times a second; the easing has to run
+every single frame. Easing inside the scatter refresh instead makes the whole
+frame — and with it the nose of the curve, its sharpest feature — step about
+eight times a second rather than move, which reads as a wobble.
+
+## The experience-section background
+
+The shape of the daily Rates/FX sensitivity run, behind "From risk analytics to
+portfolio construction". Four legs, every one pinned through the origin — a
+sensitivity ladder is a *change* in PnL against a *shock*, so at zero shock
+nothing has moved and every factor crosses there. That pinch with the curves
+fanning out either side is what makes it a spider.
+
+```
+PnL_f(s) = delta_f . s  +  1/2 gamma_f . s^2  +  1/6 speed_f . s^3
+```
+
+The first two terms are the delta-gamma approximation the risk engine reports.
+The cubic is a deliberate third-order addition: a pure quadratic is perfectly
+symmetric about its vertex and real revaluation ladders never are, because gamma
+itself moves as the shock gets larger.
+
+Each leg is a **deliberate archetype rather than a random draw** — four curves
+that each say something beat a dozen that blur together:
+
+| leg | coefficients | shape | book |
+| --- | --- | --- | --- |
+| `STRADDLE` | `δ≈0, γ≫0` | U | well hedged, long convexity |
+| `CUBIC` | `δ≈0, γ≈0, speed` dominant | `s³` — flat middle, opposite wings | convexity that changes sign across the range |
+| `STRUCTURED` | base + 3 smoothed digitals | plateaus and changes of curvature | optionality with strikes across the range |
+
+Each leg carries its own step of the accent ramp, which happens to have exactly
+three of them — so the legs are told apart by shade rather than by a legend, and
+the ramp reads as an ordered ramp in both themes (light-to-dim in the dark one,
+dark-to-light in the light one). The alphas lift the dimmer end so all three
+carry equally.
+
+`STRUCTURED` is the complicated one, and it is the only leg that needs more than
+a polynomial: three `tanh` terms at drifting strikes, re-based so the leg still
+passes through the origin. Nothing lower order reproduces a real ladder with
+strikes scattered across it.
+
+A **hedge dial** drifts from well hedged toward directional and back. It moves
+`STRUCTURED`'s directional component, which is the honest place for it — hedging
+changes directional exposure, not the convexity you were sold. A marker sweeps
+the shock axis, drops a dot where it cuts each leg, and haloes whichever one is
+moving most at that shock.
+
+One bit of geometry is load-bearing: the wing extremes are where the convexity
+actually shows, so the box is sized to keep them on screen rather than letting
+them run off the canvas and leaving only the flat middle in view.
+
+Four polynomials over sixty samples plus a handful of `tanh` calls is a few
+thousand flops a frame, so unlike the frontier's scatter there is nothing here
+worth caching.
+
+## The toolkit-section background
+
+A live implied volatility surface — the pricing dictionary. Every option is
+looked up against it, so its shape carries the two things the market is actually
+quoting: a skew across strike and a term structure across expiry.
+
+Built with **SSVI**, the surface form of Gatheral's stochastic-volatility-
+inspired parameterisation, rather than an arbitrary curved mesh — it is what a
+surface is genuinely fitted with, and it stays roughly arbitrage-sane by
+construction:
+
+```
+w(k, θ) = θ/2 · ( 1 + ρ·φ·k + sqrt((φ·k + ρ)² + 1 − ρ²) )
+φ(θ)    = η / θ^γ
+σ(k, T) = sqrt( w / T )
+```
+
+At `k = 0` the bracket collapses to 2 and `w = θ` exactly, so the ATM line of the
+surface *is* the term structure by construction rather than by accident.
+
+| parameter | what it does |
+| --- | --- |
+| `θ(T)` | ATM term structure — contango when calm, inverted when the front end gets bid |
+| `ρ` | the skew; negative for equity, steepens under stress, and the reason the surface leans rather than sitting symmetric |
+| `η`, `γ` | how fast the skew flattens with expiry; `γ ≈ 0.44` reproduces the usual `1/√T` decay |
+
+A stress dial drifts between those regimes. Maturities are spaced
+**geometrically**, because the curvature lives at the short end and a linear grid
+spends its resolution at the back where the surface is flat.
+
+**The strike range is the whole picture.** A real surface is quoted across
+moneyness of roughly 0.5 to 3 — log-moneyness of about −1.1 to +0.5 — and that
+width is where the skew ridge lives. Plot a narrow ±20% band instead and SSVI is
+very nearly linear across it: the result is a tilted plane, which is what a
+surface emphatically is not. The wing is the point.
+
+Two pieces of projection geometry are load-bearing, and both were got wrong
+first time:
+
+- **The tall corner belongs at the back.** The put wing at the short end is the
+  high one, so it is mapped to the far corner and rises into empty space above
+  the sheet. Put it near the viewer and a wireframe of a surface this tall folds
+  through itself into a tangle.
+- **Proportions are a balance, not a maximisation.** Too little vertical and it
+  reads as a tilted plane; too little footprint and the mesh self-intersects,
+  because a tall surface in axonometric needs depth separation to stay legible.
+- **Do not spend the whole clear band on width.** A surface stretched to fill
+  the space reads as flat however curved it is — the eye takes a wide, shallow
+  footprint as a plane seen edge-on. The box takes a little over half the band
+  and its height comes from the vertical room above the toolkit grid rather than
+  from its own width, so narrowing it does not flatten it as well. The unspent
+  width also carries the chart back toward the middle of the page. The footprint
+  depth is tied to the footprint *width*, not the box, so the base stays a proper
+  isometric diamond at any box shape and only the vertical axis takes the extra.
+
+**SSVI alone is not enough to look real.** It is monotone in strike, so a fitted
+base gives one tall wing and leaves the rest of the sheet very nearly a plane.
+Real surfaces are not that clean: event vol at a particular expiry,
+structured-product flow parked at a particular strike, and the rest of the
+supply-and-demand mess show up as localised humps and dips riding on the fit —
+and they move. Four Gaussians in (strike, log-expiry) approximate that, with
+centres and amplitudes drifting and the amplitude crossing zero so they surface
+and subside rather than sliding about. They are a demo device, not a fit, and the
+clamp on the sum is there so a rare coincidence of all four cannot spike the
+sheet and squash everything else through the range normalisation.
+
+Two parameter choices are held off their extremes deliberately. Drive `ρ` hard
+negative and the call wing goes dead flat, which is most of the sheet; keeping it
+moderate and lifting `η` instead makes every slice a skewed smile with *both*
+wings rising, which is relief across the whole surface rather than one tall
+corner and a plane behind it.
+
+The animation is the surface itself — the base parameters and the bumps drifting
+on incommensurate sines, so the skew leans and relaxes, the ridge builds and
+decays, and the humps roll across. Nothing sweeps over it; the shape is the
+motion. Note that the vertical range auto-scales, so a change in the *level* of
+vol is invisible by construction — only changes in *shape* read, which is why
+the shape parameters carry the animation.
+
+**One hump, and it stays where it is.** This is the difference between a surface
+and a flag. Letting a centre drift makes the relief *travel* across the sheet, so
+every part of it is always moving and the whole thing rolls and waves. Pinned and
+pulsed instead, the hump swells and subsides over its own patch while the rest of
+the sheet holds still — which is how a surface actually behaves: a name gets bid
+for a fortnight around one expiry and the rest of the book does not move with it.
+
+Three details keep it reading as vol rather than as an artefact:
+
+- **Wide.** A narrow Gaussian on a smooth sheet is a spike poking through a
+  tarpaulin. Spread over most of the strike axis it becomes a swell the surface
+  carries, which is both more elegant and closer to what a bid for a region of
+  the book actually does to the quotes.
+- **A raised cosine with a floor under it**, not a plain sine. The hump breathes
+  between a third of its height and full, rather than swinging through zero into
+  a pit and back — so it is always present and the surface never flattens off to
+  bare SSVI at the bottom of a cycle. A full breath takes about six seconds;
+  slower than that and nobody waits long enough to notice the surface is alive.
+- **A display curve on the vertical** (`z^0.65`). A real surface has a huge
+  dynamic range — the short-dated wing can be five times the long-dated ATM — and
+  mapping that linearly spends the whole axis on one corner and presses the rest
+  flat against the floor. The exponent lifts the body of the sheet without
+  flattening the wall.
+
+Three axes are drawn off the near-left corner — implied vol rising, strike and
+expiry running away along the base. That corner is the call wing at the short
+end, which is the *low* corner of the surface, so the axes sit in clear space
+instead of being buried under the skew wall. Same stroke as the floor so the
+frame reads as one object; no ticks and no labels, because the shape is the
+point and the numbers are not.
+
+Because the centre is fixed, the Gaussian shape factors are **constants** —
+computed once at seed and never again. The hump costs one cosine a frame rather
+than `NT + NK` exponentials, so pinning it turned out to be cheaper as well as
+better-looking.
+
+Drawn as a wireframe in axonometric projection rather than a filled mesh: it
+matches the line language of the other three backgrounds, costs ~30 strokes
+instead of a few hundred fills, and depth reads fine from grading the lines by
+distance with the boundary picked out. ~360 grid points and one `pow` per expiry
+— a few thousand flops a frame, nothing worth caching.
+
+## Canvas backgrounds
+
+`assets/js/viz-core.js` is the harness both backgrounds' successors should use.
+A visualisation only ever has to answer "draw one frame, at this size, in this
+palette, at time t"; everything around that is identical every time, so it lives
+in one place: device-pixel-ratio sizing, reading theme tokens out of CSS and
+re-reading them on the theme toggle, running rAF only while the canvas is on
+screen and the tab is visible, honouring `prefers-reduced-motion`, debounced
+resize, and a real-elapsed-time clock so a 120Hz display does not run the
+animation at double speed.
+
+```js
+FZViz.mount("frontier", {
+  seed:  function (env) { /* first mount and every resize */ },
+  frame: function (env) { /* draw exactly one frame */ }
+});
+```
+
+`env` carries `ctx`, `W`, `H`, `dpr`, `t` in seconds, `frame`, `reduced`,
+`light` (which way round the theme is, since a dark accent on a light ground
+needs more alpha to read the same), a `palette` of `"r,g,b"` triplets keyed by
+token name, an `rgba(token, alpha)` helper, and a `state` object the spec owns.
+The canvas is cleared before every frame, so a spec only ever draws.
+
+Adding another background is: mark the section `.section--viz`, drop one
+`<canvas class="section__viz" id="…">` in it, and write one file with
+`seed`/`frame`. Nothing in the harness needs to change — the frontier and the
+sensitivity spider share it unmodified.
+
+**Keeping a background off the copy.** Washing the chart out with a scrim and
+hoping was not good enough — curves still crossed the type and it was tiring to
+read. The harness instead measures the section's `.section__head` and hands each
+spec the box in `env.keepOut`; the spec calls `FZViz.softErase(ctx, rect, pad,
+feather)` at the end of its draw and the chart simply is not there. Exact, no
+haze over the type, and it follows the text however it reflows.
+
+Two details make it work. The measurement walks the `offsetParent` chain rather
+than using `getBoundingClientRect`, because the section head carries `.reveal`
+and holds a `translateY` until it animates in — a rect taken before that would be
+off by the transform. And the erase is composed from a solid core plus four edge
+and four corner gradients, laid out not to overlap, because `destination-out`
+compounds and overlapping fills would cut a visible seam along the edges.
+
+Both charts also take their horizontal position *from* that measured box rather
+than from a fraction, so the parts worth seeing stay clear of the copy at any
+width instead of only at the one they were eyeballed on.
+
+Because the charts can only start where the text stops, the copy's measure is
+the one lever that moves them back toward the middle of the page — so a section
+carrying a chart shortens it:
+
+```css
+.section--viz .section__head:first-of-type { max-width: 64ch; }
+```
+
+`:first-of-type` matters: the toolkit section holds three heads, and only the
+first one shares its band with a chart.
+
+That is better typography on its own (72ch is at the top of the comfortable
+range), and it bought the charts about 110px each, which is the difference
+between sitting in the right margin and sitting in the page.
+
+One trap that comes with it: `ch` depends on the loaded font, so the text box
+moves when the web font swaps in — and the charts are positioned against a
+measurement of that box. The harness therefore re-measures on `document.fonts
+.ready`, or the keep-out can be left describing the fallback font's layout
+rather than the real one.
+
+What is left of the scrim is the fade into whatever follows the head, driven by
+custom properties so a section can tune it without touching the shared rule:
+
+| property | default | purpose |
+| --- | --- | --- |
+| `--viz-ink` | `var(--page)` | fade colour; `.section--alt` swaps it to `var(--surface)` |
+| `--viz-fade-a` / `--viz-fade-b` | `46%` / `62%` | where the chart starts and finishes dissolving |
+
+About fades late, because its cards are opaque and cover whatever is left.
+Experience fades early, because its timeline sits straight on the page and the
+chart has to be gone before it starts.
+
+Below 1024px the copy fills most of the width and the clear band beside it is too
+narrow for a chart that must stay off the text, so the canvas is hidden.
+
+`network.js` predates the harness and still carries its own copy of that
+lifecycle — it works, so it has been left alone, but it could be moved onto
+`FZViz` with no visual change whenever it is next touched.
 
 ## Colour
 

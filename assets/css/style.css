@@ -527,6 +527,76 @@ h1.hero__name em {
 .section { padding-block: clamp(5rem, 11vw, 9rem); position: relative; }
 .section--alt { background: var(--surface); border-block: 1px solid var(--line); }
 
+/* Canvas backgrounds inside a section, built the way the hero is: the canvas
+   runs the full bleed underneath (z-index 0), a scrim knocks it back where the
+   text sits (z-index 1), and .wrap rides over both (z-index 2). Mark the
+   section .section--viz and drop a .section__viz canvas in it; the layering,
+   the scrim and the bottom fade are then already handled. */
+.section--viz {
+  overflow: hidden;
+  /* The scrim follows the section's own background colour, and its fade stops
+     are tunable per section — a section whose content sits straight on the page
+     rather than on opaque cards has to dissolve the chart earlier. Defaults
+     suit a plain .section; .section--alt swaps the colour.
+
+     There is no well under the copy any more: each visualisation measures the
+     real text box and erases itself there on canvas, which is exact and leaves
+     no haze over the type. This is only the fade into whatever follows. */
+  --viz-ink: var(--page);
+  --viz-fade-a: 46%;
+  --viz-fade-b: 62%;
+}
+.section--alt.section--viz { --viz-ink: var(--surface); }
+
+/* The experience timeline sits straight on the page, so the chart has to be
+   gone before it starts rather than dissolving into a card edge. */
+#experience {
+  --viz-fade-a: 27%;
+  --viz-fade-b: 39%;
+}
+
+/* The toolkit grid starts high and is opaque, and the section runs long past
+   it, so the surface has a shallow band and must be gone before the grid. */
+#toolkit {
+  --viz-fade-a: 16%;
+  --viz-fade-b: 20%;
+}
+.section__viz {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 0;
+  pointer-events: none;
+}
+.section--viz::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  /* A fade to the section colour before whatever follows the head starts, so
+     the chart dissolves into it instead of being chopped off at its edge. */
+  background:
+    linear-gradient(180deg, transparent var(--viz-fade-a), var(--viz-ink) var(--viz-fade-b));
+}
+.section > .wrap { position: relative; z-index: 2; }
+
+/* A section that shares its width with a chart gives the copy a shorter
+   measure. That is better typography on its own — 72ch is at the top of the
+   comfortable range — and it is the only lever that actually moves the chart
+   back toward the middle of the page, since the chart is erased wherever the
+   text sits and can only start where the text stops. */
+.section--viz .section__head:first-of-type { max-width: 64ch; }
+
+/* Below this the copy fills most of the width and the clear band beside it is
+   too narrow for a chart that must stay off the text. A display:none canvas
+   never intersects, so the harness keeps it parked rather than animating
+   behind nothing. */
+@media (max-width: 1024px) {
+  .section__viz { display: none; }
+}
+
 .section__head { margin-bottom: clamp(2.75rem, 6vw, 4.5rem); max-width: 72ch; }
 .section__head h2 {
   font-size: clamp(1.8rem, 3.6vw, 2.55rem);
