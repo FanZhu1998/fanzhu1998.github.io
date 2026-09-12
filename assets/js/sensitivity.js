@@ -252,21 +252,14 @@
     ctx.clip();
 
     /* --- the zero axes, which are the structure of the thing -------------- */
+    /* No ticks on either axis, matching the surface in the toolkit section:
+       the shape is the point, and the sweep marker already reads the shock
+       off in basis points. */
     ctx.strokeStyle = env.rgba("muted", 0.20 * boost);
     ctx.lineWidth = 1;
     ctx.beginPath();
     ctx.moveTo(R.x, cy); ctx.lineTo(R.x + R.w, cy);
     ctx.moveTo(cx, R.y); ctx.lineTo(cx, R.y + R.h);
-    ctx.stroke();
-
-    // Shock ticks every 25bp.
-    ctx.strokeStyle = env.rgba("muted", 0.14 * boost);
-    ctx.beginPath();
-    for (i = -4; i <= 4; i++) {
-      if (!i) continue;
-      var tx = X(i / 4);
-      ctx.moveTo(tx, cy - 3.5); ctx.lineTo(tx, cy + 3.5);
-    }
     ctx.stroke();
 
     /* --- the legs, one tone of the accent ramp each ----------------------- */
