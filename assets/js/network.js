@@ -29,7 +29,12 @@
   if (!canvas || !canvas.getContext) return;
 
   var ctx = canvas.getContext("2d", { alpha: true });
-  var reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  var reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches ||
+    // Data saver asks for the same thing: one settled frame, no loop.
+    !!(navigator.connection && navigator.connection.saveData);
+  // A coarse primary pointer is a phone or a tablet, which is to say a
+  // battery: paint at ~30fps and take two simulation steps a frame instead.
+  var coarse = window.matchMedia("(pointer: coarse)").matches;
 
   // Fama–French 49 industry portfolios, in the library's own order.
   var INDUSTRIES = [
@@ -62,10 +67,12 @@
 
   /* ---------- Tunables ---------------------------------------------------- */
 
-  var RATE = 0.22;       // fraction of each solver step taken per frame
+  var STEP = 1 / 60;     // one simulation step, in seconds; every rate below is per step
+  var RATE = 0.22;       // fraction of each solver move taken per step
   var SCALE = 0.32;      // distance scale, as a share of the short canvas side
   var MAXWEB = 320;      // hard cap on faint correlation edges drawn
   var STYLE_AMP = 0.30;  // how much the rotating style factor can move a pair
+  var FRAME_MS = coarse ? 30 : 0;   // minimum paint interval; 0 paints every frame
 
   /* ---------- State ------------------------------------------------------- */
 
@@ -103,7 +110,11 @@
   })();
 
   var W = 0, H = 0, dpr = 1, S = 1, sx = 1;
+  var mode = "backdrop";     // "band" on narrow screens; the stylesheet decides
+  var cx0 = 0, cy0 = 0;      // where the network is centred
+  var rx = 0, ry = 0;        // where a regime shockwave starts
   var running = false, rafId = null, clock = 0, frame = 0;
+  var last = 0, acc = 0;     // real clock, and time not yet stepped
 
   // Regime process.
   var lambda = 0.07, lamFrom = 0.07, lamTo = 0.07;
@@ -193,21 +204,61 @@
     flash.fill(0);
   }
 
-  function resize() {
-    dpr = Math.min(window.devicePixelRatio || 1, 2);
+  function resize(force) {
+    var d = Math.min(window.devicePixelRatio || 1, 2);
     var r = canvas.getBoundingClientRect();
-    W = Math.max(r.width, 1);
-    H = Math.max(r.height, 1);
+    var w = Math.max(r.width, 1), h = Math.max(r.height, 1);
+    var m = readMode();
+
+    // Mobile browsers fire resize when the URL bar hides; re-seeding on that
+    // would restart the network mid-scroll for no reason.
+    if (!force && w === W && h === H && d === dpr && m === mode) return;
+
+    W = w; H = h; dpr = d; mode = m;
     canvas.width = Math.round(W * dpr);
     canvas.height = Math.round(H * dpr);
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
 
-    // Distance scale, and a horizontal stretch so a wide hero still fills.
-    S = Math.min(W / 1.25, H) * SCALE;
-    sx = Math.max(1, Math.min(W / H, 1.6));
-
+    place();
     seed();
     if (reduced) { mst(); draw(); }
+  }
+
+  /* "backdrop" or "band", read off the canvas the way the harness does, so the
+     breakpoint lives in the stylesheet and nowhere else. */
+  function readMode() {
+    var m = getComputedStyle(canvas).getPropertyValue("--viz-mode");
+    return (m || "").trim() === "band" ? "band" : "backdrop";
+  }
+
+  /* Where the network sits and how big it is.
+
+     Wide screens: right of centre, since the hero scrim darkens the left third
+     behind the text, with a horizontal stretch so a wide hero still fills.
+
+     Narrow screens: the copy spans the full width, so the network takes the
+     clear band between the nav and the copy instead. Measured, not guessed —
+     how much room that is depends on the height of the phone — and the scale
+     is set so the cloud fits it, since the layout keeps the cloud within about
+     1.2 S of its centre. */
+  function place() {
+    if (mode === "band") {
+      var nav = document.querySelector(".nav");
+      var inner = canvas.parentNode.querySelector(".hero__inner");
+      var top = nav ? nav.offsetHeight : 0;
+      var bottom = inner ? inner.offsetTop : H * 0.4;
+      S = Math.max(24, ((bottom - top) / 2 - 10) / 1.2);
+      sx = Math.max(1, Math.min(W * 0.42 / (1.2 * S), 1.6));
+      cx0 = rx = W / 2;
+      cy0 = ry = (top + bottom) / 2;
+    } else {
+      S = Math.min(W / 1.25, H) * SCALE;
+      sx = Math.max(1, Math.min(W / H, 1.6));
+      cx0 = W * (W >= 1000 ? 0.6 : 0.5);
+      cy0 = H / 2;
+      rx = W / 2;
+      ry = H / 2;
+    }
   }
 
   /* ---------- Regime ------------------------------------------------------ */
@@ -388,10 +439,8 @@
 
   /* ---------- Draw -------------------------------------------------------- */
 
-  /* The hero scrim darkens the left third behind the text, so on wide screens
-     the network sits right of centre where it can actually be seen. */
-  function px(p) { return W * (W >= 1000 ? 0.6 : 0.5) + p.x * sx; }
-  function py(p) { return H / 2 + p.y; }
+  function px(p) { return cx0 + p.x * sx; }
+  function py(p) { return cy0 + p.y; }
 
   function draw() {
     ctx.clearRect(0, 0, W, H);
@@ -482,7 +531,7 @@
       ctx.strokeStyle = "rgba(" + palette.edge + "," + ((1 - ring) * 0.13).toFixed(3) + ")";
       ctx.lineWidth = 1.2;
       ctx.beginPath();
-      ctx.arc(W / 2, H / 2, ring * maxR, 0, Math.PI * 2);
+      ctx.arc(rx, ry, ring * maxR, 0, Math.PI * 2);
       ctx.stroke();
     }
 
@@ -500,21 +549,36 @@
 
   /* ---------- Loop -------------------------------------------------------- */
 
-  function loop() {
-    if (!running) return;
-    clock += 1 / 60;
+  function step() {
+    clock += STEP;
     regime();
     correlate();
     layout(RATE);
     for (var i = 0; i < flash.length; i++) flash[i] *= 0.94;
     mst();
-    draw();
+  }
+
+  /* Fixed steps on a real clock, so the display's refresh rate decides how
+     often a frame is painted and not how fast the network moves — one step per
+     frame ran it at double speed on a 120Hz screen. The clamp stops a resumed
+     tab from working off the whole time it was hidden in one frame, and the
+     frame cap skips the paint but not the clock. */
+  function loop(now) {
+    if (!running) return;
     rafId = requestAnimationFrame(loop);
+    if (FRAME_MS && now - last < FRAME_MS) return;
+    acc += last ? Math.min((now - last) / 1000, STEP * 4) : STEP;
+    last = now;
+    var steps = 0;
+    while (acc >= STEP) { step(); acc -= STEP; steps++; }
+    if (steps) draw();
   }
 
   function start() {
     if (running || reduced) return;
     running = true;
+    last = 0;
+    acc = 0;
     rafId = requestAnimationFrame(loop);
   }
   function stop() {
@@ -539,7 +603,7 @@
   var rt;
   window.addEventListener("resize", function () {
     clearTimeout(rt);
-    rt = setTimeout(resize, 150);
+    rt = setTimeout(function () { resize(false); }, 150);
   });
 
   document.addEventListener("themechange", function () {
@@ -547,7 +611,17 @@
     if (reduced) draw();
   });
 
+  /* On a narrow screen the network is placed against the copy, and the copy
+     moves when the web font swaps in. Re-place — not re-seed — once the fonts
+     settle; the layout eases to the new scale on its own. */
+  if (document.fonts && document.fonts.ready && document.fonts.ready.then) {
+    document.fonts.ready.then(function () {
+      place();
+      if (reduced) draw();
+    })["catch"](function () {});
+  }
+
   readPalette();
-  resize();
+  resize(true);
   if (!reduced) start();
 })();

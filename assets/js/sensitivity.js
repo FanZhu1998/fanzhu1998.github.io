@@ -97,6 +97,10 @@
      and the wing extremes, which is where the convexity actually shows, end up
      off canvas and all that is left on screen is the flat middle. */
   function plotRect(env) {
+    // On a narrow screen the sheet is a figure above the copy, not a backdrop
+    // beside it. The harness says which and hands over the box; the spider is
+    // wider than it is tall, so it may take most of the band.
+    if (env.mode === "band") return window.FZViz.bandRect(env, 1.7);
     var W = env.W, H = env.H;
     if (W < 760 || H < 260) return null;
     /* Placed against the harness's measurement of the real text box rather than

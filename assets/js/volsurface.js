@@ -118,6 +118,11 @@
      — a surface with a shallow z range reads as a tilted plane however curved
      it really is. */
   function plotRect(env) {
+    // On a narrow screen the surface is a figure above the copy, not a backdrop
+    // beside it. The harness says which and hands over the box, held square:
+    // the footprint depth is tied to the width, so a box wider than it is tall
+    // would run the near corner off the bottom — and a wide surface reads flat.
+    if (env.mode === "band") return window.FZViz.bandRect(env, 1.0);
     var W = env.W, H = env.H;
     if (W < 760 || H < 260) return null;
     var k = env.keepOut;

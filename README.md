@@ -67,8 +67,13 @@ Drawn each frame:
 
 Nodes reaching degree ≥ 5 get labelled. At n = 49 a frame costs roughly ten
 thousand pair operations and about sixty canvas paths; the node count drops to 34
-and 24 on narrower screens. It pauses when scrolled out of view or when the tab is
-hidden, and renders a single settled frame under `prefers-reduced-motion`.
+and 24 on narrower screens. The simulation runs in fixed 1/60 s steps on a real
+clock, so a 120Hz screen paints more often without running it faster, and phones
+and tablets paint at ~30fps taking two steps a frame. On narrow screens the copy
+spans the full width, so the network moves into the clear band above it — see
+*Band mode* under Canvas backgrounds. It pauses when scrolled out of view or
+when the tab is hidden, and renders a single settled frame under
+`prefers-reduced-motion` or data saver.
 
 ## The about-section background
 
@@ -129,9 +134,8 @@ out of the bottom left instead, which is both the more elegant shape and the one
 people actually draw. The upper bound is extended to compensate, so trimming the
 band does not stretch the curve vertically and steepen it.
 
-It is hidden below 760px, where the head and the cards use the full width and a
-canvas behind them buys nothing but battery. A `display: none` canvas never
-intersects, so the harness keeps it parked rather than animating behind nothing.
+Below 1024px it is a figure above the section head rather than a backdrop beside
+it — see *Band mode* under Canvas backgrounds.
 
 **Cost.** The scatter is the only expensive part — a thousand-odd portfolios,
 each a K² quadratic form and a fill. It is rendered into an offscreen layer a few
@@ -328,9 +332,11 @@ A visualisation only ever has to answer "draw one frame, at this size, in this
 palette, at time t"; everything around that is identical every time, so it lives
 in one place: device-pixel-ratio sizing, reading theme tokens out of CSS and
 re-reading them on the theme toggle, running rAF only while the canvas is on
-screen and the tab is visible, honouring `prefers-reduced-motion`, debounced
-resize, and a real-elapsed-time clock so a 120Hz display does not run the
-animation at double speed.
+screen and the tab is visible, honouring `prefers-reduced-motion` (and data
+saver, which gets the same single settled frame), debounced resize, a
+real-elapsed-time clock so a 120Hz display does not run the animation at double
+speed, and a ~30fps paint cap on coarse-pointer devices — phones and tablets —
+which on that clock halves the battery cost without changing the speed.
 
 ```js
 FZViz.mount("frontier", {
@@ -341,14 +347,16 @@ FZViz.mount("frontier", {
 
 `env` carries `ctx`, `W`, `H`, `dpr`, `t` in seconds, `frame`, `reduced`,
 `light` (which way round the theme is, since a dark accent on a light ground
-needs more alpha to read the same), a `palette` of `"r,g,b"` triplets keyed by
-token name, an `rgba(token, alpha)` helper, and a `state` object the spec owns.
-The canvas is cleared before every frame, so a spec only ever draws.
+needs more alpha to read the same), `mode` (`"backdrop"` or `"band"` — see
+below), `keepOut` (the copy's box, below), a `palette` of `"r,g,b"` triplets
+keyed by token name, an `rgba(token, alpha)` helper, and a `state` object the
+spec owns. The canvas is cleared before every frame, so a spec only ever draws.
 
 Adding another background is: mark the section `.section--viz`, drop one
 `<canvas class="section__viz" id="…">` in it, and write one file with
-`seed`/`frame`. Nothing in the harness needs to change — the frontier and the
-sensitivity spider share it unmodified.
+`seed`/`frame` whose box function starts with the one line that handles narrow
+screens (below). Nothing in the harness needs to change — the frontier, the
+sensitivity spider and the vol surface share it unmodified.
 
 **Keeping a background off the copy.** Washing the chart out with a scrim and
 hoping was not good enough — curves still crossed the type and it was tiring to
@@ -401,12 +409,60 @@ About fades late, because its cards are opaque and cover whatever is left.
 Experience fades early, because its timeline sits straight on the page and the
 chart has to be gone before it starts.
 
-Below 1024px the copy fills most of the width and the clear band beside it is too
-narrow for a chart that must stay off the text, so the canvas is hidden.
+### Band mode — phones and tablets
 
-`network.js` predates the harness and still carries its own copy of that
-lifecycle — it works, so it has been left alone, but it could be moved onto
-`FZViz` with no visual change whenever it is next touched.
+Below 1024px the copy fills most of the width and there is no clear band beside
+it for a chart that must stay off the text. Rather than hide the canvas, the
+stylesheet turns it into a **figure**: out of the backdrop position and laid in
+flow above the section head at a fixed proportion (`aspect-ratio: 16 / 9`; the
+surface gets `4 / 3` because it is drawn tall on purpose), with the fade
+switched off because there is nothing under it to dissolve into. The canvas is
+already the first child of its section, so no markup moves.
+
+The decision is published to the script rather than duplicated in it:
+
+```css
+.section__viz { --viz-mode: backdrop; }
+@media (max-width: 1024px) { .section__viz { --viz-mode: band; … } }
+```
+
+The harness reads that property off the canvas on every resize and exposes it
+as `env.mode`, so the breakpoint lives in the stylesheet and nowhere else, and
+rotating a tablet across it flips the mode correctly. In band mode `env.keepOut`
+is `null` — a figure sits above the copy, not beside it, and the measurement
+would in any case be off by the section's top padding, since an in-flow canvas
+no longer shares the section's origin. `softErase` on `null` is a no-op, so a
+spec's draw code does not change.
+
+What a spec does with it is one line at the top of its box function:
+
+```js
+if (env.mode === "band") return window.FZViz.bandRect(env, 1.5);
+```
+
+`bandRect(env, aspect)` is the whole canvas, inset so nothing ends on the canvas
+edge, held to the chart's own proportion and centred — a band is wide and short
+and most charts are not. The frontier asks for 1.5 (wider and the bullet turns
+into a streak), the spider 1.7, the surface 1.0 (its footprint depth is tied to
+its width, so a wider box runs the near corner off the bottom). Everything else
+in the spec — the model, the draw, the erase — is untouched, and the desktop
+path is not entered at all.
+
+The hero does the same thing without the harness: `#network` carries the same
+`--viz-mode`, and in band mode `network.js` moves the network into the clear
+band between the nav and the copy — measured against `.hero__inner`, since how
+much room that is depends on the height of the phone, and re-measured when the
+web font settles — while the wide ellipse in `.hero::after` gives way to a soft
+edge drawn on the copy's own box (`.hero__inner::before`), so it follows the
+text rather than a guess at where the text is. On a short phone the band is
+small and so is the network; bottom-aligning the hero copy on narrow screens
+would buy it more room, and is the lever to reach for if that matters.
+
+`network.js` predates the harness and still carries its own copy of the
+lifecycle. It now shares the mode contract, the coarse-pointer paint cap and a
+fixed-step clock (1/60 s steps on real time, so a 120Hz screen no longer runs it
+at double speed), but it could still be moved onto `FZViz` with no visual change
+whenever it is next touched.
 
 ## Colour
 

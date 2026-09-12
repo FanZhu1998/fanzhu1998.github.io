@@ -29,7 +29,17 @@
   "use strict";
 
   var reduced = !!(global.matchMedia &&
-    global.matchMedia("(prefers-reduced-motion: reduce)").matches);
+    global.matchMedia("(prefers-reduced-motion: reduce)").matches) ||
+    // Data saver asks for the same thing: one settled frame, no loop.
+    !!(global.navigator && global.navigator.connection &&
+       global.navigator.connection.saveData);
+
+  /* A coarse primary pointer is a phone or a tablet, which is to say a
+     battery. Those paint at ~30fps: the clock below is real time, so the
+     animation runs at the same speed on half the frames. */
+  var coarse = !!(global.matchMedia &&
+    global.matchMedia("(pointer: coarse)").matches);
+  var FRAME_MS = coarse ? 30 : 0;
 
   /* Theme tokens worth exposing. Anything here is available to every spec as
      env.palette[name] and env.rgba(name, alpha). */
@@ -149,6 +159,18 @@
     ctx.fillRect(dx < 0 ? cx - f : cx, dy < 0 ? cy - f : cy, f, f);
   }
 
+  /* The box a chart gets when it is a figure rather than a backdrop
+     (env.mode === "band"): the whole canvas, inset so nothing ends on the
+     canvas edge — there is no fade to dissolve into — and held to the
+     chart's own proportion, because a band is wide and short and most charts
+     are not. Centred in whatever is left. */
+  function bandRect(env, aspect) {
+    var m = Math.round(Math.min(env.W, env.H) * 0.06);
+    var h = env.H - 2 * m;
+    var w = Math.min(env.W - 2 * m, h * aspect);
+    return { x: (env.W - w) / 2, y: m, w: w, h: h };
+  }
+
   function mount(id, spec) {
     var canvas = document.getElementById(id);
     if (!canvas || !canvas.getContext || !spec || typeof spec.frame !== "function") {
@@ -168,6 +190,12 @@
       frame: 0,
       reduced: reduced,
       light: false,
+      /* "backdrop": the canvas runs behind the section and the chart sits in
+         the clear band beside the copy. "band": the canvas is a figure laid in
+         flow above the copy and the chart has all of it. The stylesheet
+         decides, through --viz-mode on the canvas, so the breakpoint lives in
+         one place and a spec never needs to know what it is. */
+      mode: "backdrop",
       keepOut: null,     // the copy this background must stay clear of
       palette: {},
       state: {},
@@ -191,9 +219,18 @@
     /* Where the copy sits, in canvas coordinates. Measured rather than guessed
        at in percentages, so it follows the text however it reflows. */
     function measureKeepOut() {
+      // A figure sits above the copy, not beside it: nothing to stay clear of.
+      // (The measurement would also be off by the section's top padding, since
+      // an in-flow canvas no longer shares the section's origin.)
+      if (env.mode === "band") { env.keepOut = null; return; }
       var head = canvas.parentNode &&
         canvas.parentNode.querySelector(spec.keepOut || ".section__head");
       env.keepOut = head ? rectWithin(head, canvas.parentNode) : null;
+    }
+
+    function readMode() {
+      var m = getComputedStyle(canvas).getPropertyValue("--viz-mode");
+      return (m || "").trim() === "band" ? "band" : "backdrop";
     }
 
     function paint() {
@@ -206,14 +243,16 @@
       var w = Math.max(Math.round(rect.width), 1);
       var h = Math.max(Math.round(rect.height), 1);
       var d = Math.min(global.devicePixelRatio || 1, 2);
+      var m = readMode();
 
       // Mobile browsers fire resize when the URL bar hides; re-seeding on that
       // would restart the visualisation mid-scroll for no reason.
-      if (!force && w === env.W && h === env.H && d === env.dpr) return;
+      if (!force && w === env.W && h === env.H && d === env.dpr && m === env.mode) return;
 
       env.W = w;
       env.H = h;
       env.dpr = d;
+      env.mode = m;
       canvas.width = Math.round(w * d);
       canvas.height = Math.round(h * d);
       ctx.setTransform(d, 0, 0, d, 0, 0);
@@ -231,6 +270,10 @@
 
     function loop(now) {
       if (!running) return;
+      rafId = global.requestAnimationFrame(loop);
+      // The frame cap skips the paint but not the clock: `last` stays put, so
+      // the time still accrues to the next frame that does paint.
+      if (FRAME_MS && now - last < FRAME_MS) return;
       var dt = (now - last) / 1000;
       last = now;
       if (!(dt > 0)) dt = 1 / 60;
@@ -238,7 +281,6 @@
       env.t += dt;
       env.frame++;
       paint();
-      rafId = global.requestAnimationFrame(loop);
     }
 
     function start() {
@@ -294,5 +336,7 @@
     return { start: start, stop: stop, env: env };
   }
 
-  global.FZViz = { mount: mount, reduced: reduced, softErase: softErase };
+  global.FZViz = {
+    mount: mount, reduced: reduced, softErase: softErase, bandRect: bandRect
+  };
 })(window);

@@ -378,6 +378,7 @@ main { counter-reset: section; }
   width: 100%;
   height: 100%;
   z-index: 0;
+  --viz-mode: backdrop;   /* read by network.js; see the section charts below */
 }
 .hero::after {
   /* keeps the network from competing with the text column */
@@ -392,6 +393,26 @@ main { counter-reset: section; }
   pointer-events: none;
 }
 .hero__inner { position: relative; z-index: 2; width: 100%; }
+
+/* Narrow screens: the copy spans the full width, so the network moves into
+   the clear band above it — network.js measures where the copy starts — and
+   the wide ellipse gives way to a soft edge that hugs the copy itself, drawn
+   on the copy's own box so it follows the text whatever the height of the
+   phone. Same breakpoint as the section charts, published the same way. */
+@media (max-width: 1024px) {
+  #network { --viz-mode: band; }
+  .hero::after {
+    background: linear-gradient(180deg, transparent 62%, var(--page) 100%);
+  }
+  .hero__inner::before {
+    content: "";
+    position: absolute;
+    z-index: -1;
+    inset: -3rem 0 0;
+    background: linear-gradient(180deg, transparent, var(--page) 3rem);
+    pointer-events: none;
+  }
+}
 
 .hero__eyebrow {
   font-family: var(--font-mono);
@@ -567,6 +588,7 @@ h1.hero__name em {
   height: 100%;
   z-index: 0;
   pointer-events: none;
+  --viz-mode: backdrop;   /* the harness reads this; see the band rule below */
 }
 .section--viz::after {
   content: "";
@@ -588,12 +610,28 @@ h1.hero__name em {
    text sits and can only start where the text stops. */
 .section--viz .section__head:first-of-type { max-width: 64ch; }
 
-/* Below this the copy fills most of the width and the clear band beside it is
-   too narrow for a chart that must stay off the text. A display:none canvas
-   never intersects, so the harness keeps it parked rather than animating
-   behind nothing. */
+/* Below this the copy fills most of the width and there is no clear band
+   beside it for a chart that must stay off the text. Rather than hide the
+   canvas, it becomes a figure: out of the backdrop position and laid in flow
+   above the section head at a fixed proportion, with the fade switched off
+   because there is nothing under it to dissolve into. The canvas is already
+   the first child of its section, so no markup moves.
+
+   The decision is published to the script through --viz-mode: the harness
+   reads it off the canvas, so the breakpoint lives here and nowhere else. */
 @media (max-width: 1024px) {
-  .section__viz { display: none; }
+  .section__viz {
+    --viz-mode: band;
+    position: relative;
+    inset: auto;
+    display: block;
+    height: auto;
+    aspect-ratio: 16 / 9;
+    margin-bottom: clamp(1.5rem, 5vw, 2.5rem);
+  }
+  .section--viz::after { display: none; }
+  /* The surface is drawn tall on purpose; a wide band would flatten it. */
+  #volsurface { aspect-ratio: 4 / 3; }
 }
 
 .section__head { margin-bottom: clamp(2.75rem, 6vw, 4.5rem); max-width: 72ch; }
@@ -1144,7 +1182,7 @@ table.data tr.is-best td { color: var(--accent); font-weight: 600; }
 /* ---------- Print -------------------------------------------------------- */
 
 @media print {
-  .nav, .scroll-cue, #network, .hero::after { display: none !important; }
+  .nav, .scroll-cue, #network, .hero::after, .hero__inner::before, .section__viz { display: none !important; }
   body { background: #fff; color: #000; }
   .section { padding-block: 1.5rem; page-break-inside: avoid; }
 }

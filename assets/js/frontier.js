@@ -116,6 +116,10 @@
      chart grows by taking height up to the cards — which are opaque and would
      cover anything drawn under them — rather than by running the full width. */
   function plotRect(env) {
+    // On a narrow screen the chart is a figure above the copy, not a backdrop
+    // beside it. The harness says which and hands over the box; the bullet
+    // keeps its proportion in it rather than being stretched across the band.
+    if (env.mode === "band") return window.FZViz.bandRect(env, 1.5);
     var W = env.W, H = env.H;
     if (W < 760 || H < 260) return null;
     /* The chart is erased where the copy sits, so the nose and the travelling
