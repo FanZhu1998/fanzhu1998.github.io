@@ -428,7 +428,7 @@ h1.hero__name em {
 }
 .hero__sub strong { color: var(--ink); font-weight: 600; }
 
-.hero__cta { display: flex; flex-wrap: wrap; gap: 0.85rem; margin-bottom: 4rem; }
+.hero__cta { display: flex; flex-wrap: wrap; gap: 0.85rem; }
 
 .btn {
   display: inline-flex;
@@ -475,7 +475,6 @@ h1.hero__name em {
   overflow: hidden;
 }
 .stat { background: var(--page); padding: 1.4rem 1.5rem; }
-.hero .stat { background: color-mix(in srgb, var(--page) 88%, transparent); }
 .stat__val {
   font-family: var(--font-display);
   font-size: clamp(1.5rem, 2.8vw, 1.95rem);
