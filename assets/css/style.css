@@ -576,10 +576,17 @@ h1.hero__name em {
 }
 
 /* The toolkit grid starts high and is opaque, and the section runs long past
-   it, so the surface has a shallow band and must be gone before the grid. */
+   it, so its chart has a shallow band and must be gone before the grid. */
 #toolkit {
   --viz-fade-a: 16%;
   --viz-fade-b: 20%;
+}
+
+/* Same shape of problem in research: the paper card is opaque and starts
+   about a sixth of the way down a section that runs long past it. */
+#research {
+  --viz-fade-a: 11.5%;
+  --viz-fade-b: 15%;
 }
 .section__viz {
   position: absolute;
@@ -610,6 +617,24 @@ h1.hero__name em {
    text sits and can only start where the text stops. */
 .section--viz .section__head:first-of-type { max-width: 64ch; }
 
+/* An inner chart: one that belongs to a head other than the section's first.
+   Its canvas sits in the markup right before that head, inside .wrap, and is
+   absolutely positioned with top at auto — so it takes its static position,
+   exactly where the flow would have put it, and runs a fixed depth from there,
+   full bleed. Inside .wrap's stacking context, z-index -1 puts it behind the
+   copy and above the section fade, which is tuned for the section's own chart
+   rather than this one; it must therefore end before whatever follows its
+   head. The head it belongs to gets the same shorter measure as a section's
+   first head does, for the same reason. */
+.section__viz--inner {
+  display: block;
+  inset: auto auto auto calc(50% - 50vw);
+  width: 100vw;
+  height: 30rem;
+  z-index: -1;
+}
+.section__viz--inner + .section__head { max-width: 64ch; }
+
 /* Below this the copy fills most of the width and there is no clear band
    beside it for a chart that must stay off the text. Rather than hide the
    canvas, it becomes a figure: out of the backdrop position and laid in flow
@@ -630,8 +655,12 @@ h1.hero__name em {
     margin-bottom: clamp(1.5rem, 5vw, 2.5rem);
   }
   .section--viz::after { display: none; }
-  /* The surface is drawn tall on purpose; a wide band would flatten it. */
-  #volsurface { aspect-ratio: 4 / 3; }
+  /* The surface is drawn tall on purpose; a wide band would flatten it. And
+     depth is the tree's vertical dimension — seven levels need the room. */
+  #volsurface, #finetree { aspect-ratio: 4 / 3; }
+  /* An inner chart in flow sits between the block before it and its head, so
+     it needs its own space above; below, the head's margin already does. */
+  .section__viz--inner { width: 100%; margin-top: clamp(2rem, 6vw, 3.5rem); }
 }
 
 .section__head { margin-bottom: clamp(2.75rem, 6vw, 4.5rem); max-width: 72ch; }

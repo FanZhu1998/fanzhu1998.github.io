@@ -245,7 +245,9 @@
 </section>
 
 <!-- ===================== RESEARCH ===================== -->
-<section class="section section--alt" id="research">
+<section class="section section--alt section--viz" id="research">
+  <canvas class="section__viz" id="finetree" aria-hidden="true"></canvas>
+
   <div class="wrap">
     <div class="section__head reveal">
       <p class="eyebrow" data-auto>Research</p>
@@ -254,7 +256,7 @@
         Work on market structure, machine learning and portfolio construction. The honors thesis
         below asked whether the topology of an industry correlation network carries a forecastable
         signal about the market regime that follows it &mdash; at short horizons it appears to,
-        over longer ones the signal largely disappears. New work is added here as it is finished.
+        over longer ones the signal largely disappears.
       </p>
     </div>
 
@@ -263,8 +265,7 @@
         <p class="paper__venue">Honors Thesis &middot; UNC Chapel Hill Economics &middot; May 2020</p>
         <h3 class="paper__title">Market Regime Forecasting using Correlation Networks and Machine Learning Classifiers</h3>
         <p class="paper__authors">
-          Dr.&nbsp;Michael Aguilar &amp; <strong>Fan Zhu</strong>
-          &nbsp;&middot;&nbsp; Faculty advisor: Dr.&nbsp;Jane Fruehwirth
+          Prof.&nbsp;Michael Aguilar &amp; <strong>Fan Zhu</strong>
           &nbsp;&middot;&nbsp; Graduated with Highest Honors
         </p>
         <p class="paper__abstract">
@@ -660,7 +661,11 @@
 
 <!-- ===================== TOOLKIT + EDUCATION ===================== -->
 <section class="section section--alt section--viz" id="toolkit">
-  <canvas class="section__viz" id="volsurface" aria-hidden="true"></canvas>
+  <!-- The volatility surface is parked, not gone: uncomment this canvas and its
+       script at the foot of the page to bring it back, and move the network to
+       an inner chart (see README) since a section carries one chart. -->
+  <!-- <canvas class="section__viz" id="volsurface" aria-hidden="true"></canvas> -->
+  <canvas class="section__viz" id="neural" aria-hidden="true"></canvas>
 
   <div class="wrap">
     <div class="section__head reveal">
@@ -794,6 +799,8 @@
 <script src="assets/js/viz-core.js" defer></script>
 <script src="assets/js/frontier.js" defer></script>
 <script src="assets/js/sensitivity.js" defer></script>
-<script src="assets/js/volsurface.js" defer></script>
+<!-- <script src="assets/js/volsurface.js" defer></script>  parked; see the toolkit section -->
+<script src="assets/js/finetree.js" defer></script>
+<script src="assets/js/neural.js" defer></script>
 </body>
 </html>

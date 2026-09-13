@@ -225,7 +225,13 @@
       if (env.mode === "band") { env.keepOut = null; return; }
       var head = canvas.parentNode &&
         canvas.parentNode.querySelector(spec.keepOut || ".section__head");
-      env.keepOut = head ? rectWithin(head, canvas.parentNode) : null;
+      var k = head ? rectWithin(head, canvas.parentNode) : null;
+      /* Relative to the canvas, not to its parent. A section's canvas starts at
+         the section's origin and the correction is zero; an inner chart sits at
+         its static position partway down .wrap, and its origin is not. */
+      var c = k ? rectWithin(canvas, canvas.parentNode) : null;
+      if (k && c) { k.x -= c.x; k.y -= c.y; }
+      env.keepOut = k;
     }
 
     function readMode() {

@@ -19,7 +19,9 @@ assets/js/network.js     hero canvas — live minimum spanning tree
 assets/js/viz-core.js    shared harness for canvas backgrounds (FZViz.mount)
 assets/js/frontier.js    about canvas — live mean-variance efficient frontier
 assets/js/sensitivity.js experience canvas — live delta-gamma sensitivity spider
-assets/js/volsurface.js  toolkit canvas — live SSVI implied volatility surface
+assets/js/volsurface.js  live SSVI implied volatility surface — parked (commented out in index.html)
+assets/js/finetree.js    research canvas — live fine tree classifier
+assets/js/neural.js      toolkit canvas — a neural network, training
 assets/favicon.svg       monogram + node-pair mark
 .nojekyll                serve files as-is, skip Jekyll processing
 ```
@@ -204,7 +206,13 @@ Four polynomials over sixty samples plus a handful of `tanh` calls is a few
 thousand flops a frame, so unlike the frontier's scatter there is nothing here
 worth caching.
 
-## The toolkit-section background
+## The volatility surface (parked)
+
+**Not on the page at the moment.** Its canvas and script are commented out in
+`index.html` — kept, not deleted, against a project that earns it — and the
+neural network below has its place in the toolkit section. Bringing it back is
+uncommenting both lines and moving the network to an inner chart (see the
+harness notes), since a section carries one chart.
 
 A live implied volatility surface — the pricing dictionary. Every option is
 looked up against it, so its shape carries the two things the market is actually
@@ -325,6 +333,94 @@ instead of a few hundred fills, and depth reads fine from grading the lines by
 distance with the boundary picked out. ~360 grid points and one `pow` per expiry
 — a few thousand flops a frame, nothing worth caching.
 
+## The research-section background
+
+The classifier that won the thesis, alive behind "Market structure, and what
+actually predicts": a fine tree. Of the bank of classifiers run over the
+correlation-network features, the one that reached 91.7% was a CART decision
+tree allowed up to a hundred splits — which grows deep and lopsided, pure
+branches stopping early and mixed ones splitting on until they run out of
+samples. That is what is drawn: not a diagram of a tree but a tree grown the way
+CART grows one, on fake data shaped like the real features.
+
+**The growth is CART's.** Every split takes a feature from the thesis's own set
+— Kruskal stress, density, maximum and mean degree, in-component degree, and
+the moments of S&P 500 returns — and a threshold in its range, sends a share of
+the node's observations left, and pushes the two children's bull fractions apart
+while preserving their weighted mean, which is what a real split does to class
+purity. Growth is best-first: the largest, most mixed node splits next, so the
+tree is unbalanced the way a fitted one is. A branch stops when it is pure, when
+it is down to the minimum leaf size, or at depth seven — the "certain degree" a
+fine tree is held to — and the whole tree stops at a leaf budget that follows
+the width on show.
+
+Three things move:
+
+- **It grows**, root first, each split branching out of its parent a beat after
+  the level above, so entering the section you watch it branch and branch.
+- **Observations arrive** at the root every couple of seconds and are routed
+  down — left or right at each split, in proportion to the split — lighting
+  the path as they go, to a leaf that flashes the regime it predicts. That is
+  the whole of what a decision tree does at prediction time, and it is what
+  makes the picture read as a classifier rather than a dendrogram.
+- **The window rolls.** Every ten seconds or so a subtree is pruned back to its
+  parent, the branches withdrawing deepest-first, and regrown from the same node
+  as a different fit. The layout eases to the new leaf count rather than
+  snapping, so the rest of the tree makes room the way branches do.
+
+Edges are graded by depth and weighted by sample count, so the trunk carries
+the tree and the fine structure fades toward the leaves. Bull leaves are filled,
+bear leaves are rings — the two classes told apart by form, since the palette is
+one hue. One label, and only for a moment: the regime a leaf has just called.
+Nothing else needs naming — the split rules stay in the model.
+
+Unlike the frontier and the surface, a tree is a bounded object — its leaves
+are its edge — so the box stays inside the canvas rather than bleeding off it.
+The section runs long past the paper card, and the card is opaque, so the tree
+has a shallow band (`--viz-fade-a: 11.5%; --viz-fade-b: 15%`) and must be gone
+before the card starts.
+
+A hundred-odd nodes: one cubic per edge, one dot per node, a few thousand flops
+a frame. Nothing worth caching.
+
+## The toolkit-section background
+
+Beside "What I reach for.", in the place the volatility surface held: a neural
+network, training. A small multilayer perceptron — seven features in,
+three hidden layers of 10, 8 and 5, two regimes out — and it is genuinely
+trained, on fake data shaped like the regime problem: online gradient descent,
+one sample at a time, cross-entropy on a softmax. Nothing about it is a
+recording.
+
+What is drawn is the two passes that make up one step:
+
+- **Forward.** A sample's activations travel left to right along the weights.
+  Every connection carries a pulse as bright as the signal on it — the product
+  of the activation and the weight, graded against the strongest signal of that
+  layer — so the pass reads as a wave over the strong paths rather than a flash
+  of everything. Each layer's units fill with their activation as the wave
+  reaches them, and the output layer calls the regime.
+- **Backward.** The error travels right to left the same way, in the cooler
+  tone, each pulse as bright as the gradient on its connection; units flare as
+  the error lands on them. Then the weights move. The resting web is drawn by
+  sign and strength — two tones, four weights of line — so the change is
+  visible: connections thicken, thin and change sign as the network learns.
+- **The regime shifts.** Every 40–70 samples the data-generating direction
+  changes. What the network knew stops being true, the loss readout jumps, and
+  it learns again — so it never settles into a finished picture.
+
+Four quiet steps are taken for every animated one, so the loss moves at a
+watchable speed rather than a real one. No labels: the passes are the point,
+and the output unit that fills is the call.
+
+It is the section's chart in the ordinary way — first child of the section,
+placed against the section's first head. It began life as an **inner chart**
+beside the education head (see the harness notes below), and that form still
+works if the surface ever comes back and the two have to share the section.
+
+Cost: 200 weights. A forward and backward pass is a few hundred multiplies; the
+resting web is eight strokes a frame, and a pass in flight adds three.
+
 ## Canvas backgrounds
 
 `assets/js/viz-core.js` is the harness both backgrounds' successors should use.
@@ -356,7 +452,7 @@ Adding another background is: mark the section `.section--viz`, drop one
 `<canvas class="section__viz" id="…">` in it, and write one file with
 `seed`/`frame` whose box function starts with the one line that handles narrow
 screens (below). Nothing in the harness needs to change — the frontier, the
-sensitivity spider and the vol surface share it unmodified.
+sensitivity spider, the vol surface and the fine tree share it unmodified.
 
 **Keeping a background off the copy.** Washing the chart out with a scrim and
 hoping was not good enough — curves still crossed the type and it was tiring to
@@ -385,7 +481,36 @@ carrying a chart shortens it:
 ```
 
 `:first-of-type` matters: the toolkit section holds three heads, and only the
-first one shares its band with a chart.
+first one shares its band with the section's chart.
+
+**Inner charts.** A chart for a head that is *not* its section's first cannot be
+the section's canvas — the section already has one, with a fade tuned for it.
+It is an inner chart instead: the canvas sits in the markup right before its
+head, inside `.wrap`, marked `.section__viz--inner`, and names that head through
+`spec.keepOut` (`"#neural + .section__head"` — the head right after it). No
+chart uses it at the moment; the network did while the surface held the
+toolkit section, and the machinery stays for the next time two charts share
+a section.
+
+```html
+<canvas class="section__viz section__viz--inner" id="neural" aria-hidden="true"></canvas>
+<div class="section__head reveal">…</div>
+```
+
+The stylesheet does the rest. Absolutely positioned with `top` at `auto`, the
+canvas takes its *static position* — exactly where the flow would have put it,
+just below the block before it — and runs a fixed depth (30rem) from there,
+full bleed via `left: calc(50% - 50vw)`. Inside `.wrap`'s stacking context,
+`z-index: -1` puts it behind the copy and above the section fade; so it gets no
+fade of its own and must be a bounded chart that ends before whatever follows
+its head. The harness measures the keep-out relative to the canvas rather than
+its parent (a zero correction for a section's canvas, which starts at the
+section's origin), and the head after an inner chart takes the same 64ch
+measure a section's first head does. In band mode the same in-flow rule applies
+as to any other canvas, which places it between the block before and its head.
+
+A 30rem canvas is also a fraction of the pixels of a section-sized one, which
+is worth having on a section as long as the toolkit.
 
 That is better typography on its own (72ch is at the top of the comfortable
 range), and it bought the charts about 110px each, which is the difference
@@ -415,7 +540,7 @@ Below 1024px the copy fills most of the width and there is no clear band beside
 it for a chart that must stay off the text. Rather than hide the canvas, the
 stylesheet turns it into a **figure**: out of the backdrop position and laid in
 flow above the section head at a fixed proportion (`aspect-ratio: 16 / 9`; the
-surface gets `4 / 3` because it is drawn tall on purpose), with the fade
+surface and the tree get `4 / 3` because they are drawn tall on purpose), with the fade
 switched off because there is nothing under it to dissolve into. The canvas is
 already the first child of its section, so no markup moves.
 
@@ -444,7 +569,8 @@ if (env.mode === "band") return window.FZViz.bandRect(env, 1.5);
 edge, held to the chart's own proportion and centred — a band is wide and short
 and most charts are not. The frontier asks for 1.5 (wider and the bullet turns
 into a streak), the spider 1.7, the surface 1.0 (its footprint depth is tied to
-its width, so a wider box runs the near corner off the bottom). Everything else
+its width, so a wider box runs the near corner off the bottom), the tree 1.45,
+the network 1.6. Everything else
 in the spec — the model, the draw, the erase — is untouched, and the desktop
 path is not entered at all.
 
