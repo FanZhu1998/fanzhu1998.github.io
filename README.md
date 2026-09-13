@@ -22,6 +22,7 @@ assets/js/sensitivity.js experience canvas — live delta-gamma sensitivity spid
 assets/js/volsurface.js  live SSVI implied volatility surface — parked (commented out in index.html)
 assets/js/finetree.js    research canvas — live fine tree classifier
 assets/js/neural.js      toolkit canvas — a neural network, training
+assets/js/pipeline.js    building canvas — the pipeline as a Sankey, validation matrices included
 assets/favicon.svg       monogram + node-pair mark
 .nojekyll                serve files as-is, skip Jekyll processing
 ```
@@ -205,6 +206,38 @@ them run off the canvas and leaving only the flat middle in view.
 Four polynomials over sixty samples plus a handful of `tanh` calls is a few
 thousand flops a frame, so unlike the frontier's scatter there is nothing here
 worth caching.
+
+## The building-section background
+
+Behind "Tools that ended up in the daily workflow": the pipeline those tools
+run in, drawn as a Sankey — with the validation nodes drawn as the matrices of
+checks they are. Fake data, but a real pipeline shape: four sources (holdings,
+benchmarks, prices, corporate actions) → two validation matrices → reconcile,
+rebalance, analytics, and an exceptions queue → dashboard, advisor email, the
+trade file, and review. Ribbon widths are volumes; the volumes drift on slow
+sines and the exceptions carry the fail rate, so the diagram breathes and the
+thin ribbons to the queue widen when validation is having a bad day.
+
+The workflow is the animation:
+
+- **Batches.** Every 2.2 seconds a batch enters and is carried through as a
+  stream of packets — a fixed set per link, each riding at its own distance
+  behind the front and its own place across the ribbon, so a batch strings out
+  the way a stream does. Nodes flare as a batch lands on them.
+- **The scan.** When a batch reaches a validation matrix the checks run cell by
+  cell, row by row over 0.6 seconds: each cell pulses as it passes and settles
+  to checked; the few that fail are drawn hollow and stay flagged until the
+  next scan. Then the batch splits — the passes on, the failures thin to the
+  queue.
+- **Overlap.** A batch takes 3.3 seconds end to end and the next enters after
+  2.2, so there are always two in flight at different stages, which is what a
+  pipeline looks like from the outside.
+
+Nothing is labelled: the node names are documentation in the file. Bounded
+like the tree and the network — the outputs are its right edge — so the box
+stays inside the canvas and ends above the cards. Cost: seventeen ribbons, a
+dozen bars, two grids of a few dozen cells, and the packets in one path — a
+few hundred canvas operations at most.
 
 ## The volatility surface (parked)
 
@@ -570,7 +603,7 @@ edge, held to the chart's own proportion and centred — a band is wide and shor
 and most charts are not. The frontier asks for 1.5 (wider and the bullet turns
 into a streak), the spider 1.7, the surface 1.0 (its footprint depth is tied to
 its width, so a wider box runs the near corner off the bottom), the tree 1.45,
-the network 1.6. Everything else
+the network and the pipeline 1.6. Everything else
 in the spec — the model, the draw, the erase — is untouched, and the desktop
 path is not entered at all.
 
