@@ -12,13 +12,12 @@
   var STORE = "fz-theme";
   var toggle = document.querySelector("[data-theme-toggle]");
 
-  function systemTheme() {
-    // The design is dark-first: only an explicit OS light preference flips it.
-    return window.matchMedia("(prefers-color-scheme: light)").matches ? "light" : "dark";
+  function defaultTheme() {
+    return "dark";
   }
 
   function activeTheme() {
-    return root.getAttribute("data-theme") || systemTheme();
+    return root.getAttribute("data-theme") || defaultTheme();
   }
 
   function applyTheme(theme) {

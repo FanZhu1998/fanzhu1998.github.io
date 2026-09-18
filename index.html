@@ -26,7 +26,7 @@
   (function () {
     try {
       var t = localStorage.getItem("fz-theme");
-      if (!t) t = window.matchMedia("(prefers-color-scheme: light)").matches ? "light" : "dark";
+      if (t !== "light" && t !== "dark") t = "dark";
       document.documentElement.setAttribute("data-theme", t);
     } catch (e) {
       document.documentElement.setAttribute("data-theme", "dark");
@@ -269,15 +269,21 @@
           &nbsp;&middot;&nbsp; Graduated with Highest Honors
         </p>
         <p class="paper__abstract">
-          Historical U.S. equity returns are partitioned into bull and bear markets using a
-          top-down turning-point algorithm. For each regime a correlation network is built over the
-          49 Fama&ndash;French industry portfolios, reduced to a minimum spanning tree, and summarised
-          by its topological features. Those features &mdash; degree distribution, in-component degree,
-          Kruskal stress and density, alongside the moments of S&amp;P 500 returns &mdash; are fed to a
-          bank of machine learning classifiers under 10-fold cross-validation. Across 16
-          combinations of estimation window and forecast lag, a Fine Tree on 1-month windows
-          forecasting one week ahead reaches <strong>91.7%</strong> accuracy; over longer horizons a
-          Kernel Naive Bayes on 3-month windows at a 12-month lag holds <strong>66.7%</strong>.
+          Can industry correlation networks help forecast bull and bear markets? My honors thesis
+          tested network features across 16 forecasting configurations, with the strongest reported
+          result at a one-week horizon and generally weaker results at longer horizons.
+        </p>
+
+        <ul class="paper__headline" aria-label="Headline result">
+          <li><strong>91.7% accuracy</strong></li>
+          <li>One-week horizon</li>
+          <li>10-fold cross-validation</li>
+          <li>48 evaluated regimes</li>
+        </ul>
+
+        <p class="paper__caveat">
+          <strong>Small-sample result.</strong> The 48 evaluated regimes leave wide uncertainty around
+          the headline accuracy, so the pattern matters more than the point estimate.
         </p>
 
         <p class="paper__link">
@@ -288,29 +294,16 @@
         </p>
       </div>
 
-      <div class="paper__body">
+      <div class="paper__body paper__details">
 
-        <div class="stats" style="margin-bottom: 2.5rem;">
-          <div class="stat">
-            <div class="stat__val">91.7%</div>
-            <div class="stat__lab">Best accuracy<br>1 week ahead</div>
-          </div>
-          <div class="stat">
-            <div class="stat__val">0.92</div>
-            <div class="stat__lab">AUC<br>Fine Tree model</div>
-          </div>
-          <div class="stat">
-            <div class="stat__val">53</div>
-            <div class="stat__lab">Correlation networks<br>constructed</div>
-          </div>
-          <div class="stat">
-            <div class="stat__val">41 yrs</div>
-            <div class="stat__lab">Daily data<br>1978&ndash;2019</div>
-          </div>
-        </div>
-
-        <p class="eyebrow" style="margin-bottom:1.25rem;">Method</p>
-        <div class="method">
+        <details class="research-detail">
+          <summary>
+            <span class="research-detail__index">01</span>
+            <span class="research-detail__title">Method</span>
+            <span class="research-detail__meta">Five steps from returns to classification</span>
+          </summary>
+          <div class="research-detail__body">
+            <div class="method">
           <div class="method__step">
             <p class="method__n">STEP 01</p>
             <p class="method__t">Partition the regimes</p>
@@ -336,9 +329,37 @@
             <p class="method__t">Classify &amp; validate</p>
             <p class="method__d">Trees, KNN, SVM, ensembles and Naive Bayes across 16 window&times;lag combinations, each under 10-fold cross-validation.</p>
           </div>
-        </div>
+            </div>
+          </div>
+        </details>
 
-        <div class="grid-2">
+        <details class="research-detail">
+          <summary>
+            <span class="research-detail__index">02</span>
+            <span class="research-detail__title">Results and data</span>
+            <span class="research-detail__meta">Metrics, model comparison and full tables</span>
+          </summary>
+          <div class="research-detail__body">
+            <div class="stats research-stats">
+              <div class="stat">
+                <div class="stat__val">91.7%</div>
+                <div class="stat__lab">Best accuracy<br>1 week ahead</div>
+              </div>
+              <div class="stat">
+                <div class="stat__val">0.92</div>
+                <div class="stat__lab">AUC<br>Fine Tree model</div>
+              </div>
+              <div class="stat">
+                <div class="stat__val">53</div>
+                <div class="stat__lab">Correlation networks<br>constructed</div>
+              </div>
+              <div class="stat">
+                <div class="stat__val">41 yrs</div>
+                <div class="stat__lab">Daily data<br>1978&ndash;2019</div>
+              </div>
+            </div>
+
+            <div class="research-results">
 
           <!-- FIGURE 1 — accuracy heatmap -->
           <figure class="figure" style="margin:0;">
@@ -350,43 +371,53 @@
               </p>
             </figcaption>
 
-            <div class="figure__scroll">
-              <div class="hm" role="img" aria-label="Heatmap of forecast accuracy across four estimation windows and four forecast lags. The highest value is 91.7 percent, at a 1-month window with a 1-week lag. All other configurations fall between 52.1 and 77.1 percent. Full values are available in the data table below.">
+            <div class="hm-control" hidden>
+              <label for="heatmap-window">Estimation window</label>
+              <select id="heatmap-window" data-heatmap-select aria-controls="accuracy-heatmap">
+                <option value="1-month">1 month</option>
+                <option value="3-month">3 months</option>
+                <option value="6-month">6 months</option>
+                <option value="12-month">12 months</option>
+              </select>
+            </div>
 
-                <div class="hm__row">
-                  <div class="hm__corner">Window &darr; / Lag &rarr;</div>
-                  <div class="hm__colhead">Shortest</div>
-                  <div class="hm__colhead">&nbsp;</div>
-                  <div class="hm__colhead">&nbsp;</div>
-                  <div class="hm__colhead">Longest</div>
+            <div class="figure__scroll">
+              <div class="hm" id="accuracy-heatmap" role="img" aria-label="Heatmap of forecast accuracy across four estimation windows and four forecast lags. The highest value is 91.7 percent, at a 1-month window with a 1-week lag. All other configurations fall between 52.1 and 77.1 percent. Full values are available in the data table below.">
+
+                <div class="hm__row hm__header">
+                  <div class="hm__corner">Window &darr;</div>
+                  <div class="hm__colhead">Lag 1</div>
+                  <div class="hm__colhead">Lag 2</div>
+                  <div class="hm__colhead">Lag 3</div>
+                  <div class="hm__colhead">Lag 4</div>
                 </div>
 
-                <div class="hm__row">
-                  <div class="hm__rowhead">1-month<br>window</div>
-                  <div class="hm__cell is-best" style="background:var(--r7);color:var(--r-ink-hi)" title="1-month window, 1-week lag — Fine Tree — 91.7%"><span class="hm__v">91.7%</span><span class="hm__m">1-week</span></div>
+                <div class="hm__row" data-heatmap-row="1-month">
+                  <div class="hm__rowhead">1 month</div>
+                  <div class="hm__cell" style="background:var(--r7);color:var(--r-ink-hi)" title="1-month window, 1-week lag — Fine Tree — 91.7%"><span class="hm__v">91.7%</span><span class="hm__m">1-week</span></div>
                   <div class="hm__cell" style="background:var(--r5);color:var(--r-ink-hi)" title="1-month window, 2-week lag — Cosine KNN — 77.1%"><span class="hm__v">77.1%</span><span class="hm__m">2-week</span></div>
                   <div class="hm__cell" style="background:var(--r3);color:var(--r-ink-lo)" title="1-month window, 3-week lag — Subspace Discriminant — 62.5%"><span class="hm__v">62.5%</span><span class="hm__m">3-week</span></div>
                   <div class="hm__cell" style="background:var(--r3);color:var(--r-ink-lo)" title="1-month window, 4-week lag — Naive Bayes — 62.5%"><span class="hm__v">62.5%</span><span class="hm__m">4-week</span></div>
                 </div>
 
-                <div class="hm__row">
-                  <div class="hm__rowhead">3-month<br>window</div>
+                <div class="hm__row" data-heatmap-row="3-month">
+                  <div class="hm__rowhead">3 months</div>
                   <div class="hm__cell" style="background:var(--r3);color:var(--r-ink-lo)" title="3-month window, 1-month lag — Fine Tree — 62.5%"><span class="hm__v">62.5%</span><span class="hm__m">1-month</span></div>
                   <div class="hm__cell" style="background:var(--r2);color:var(--r-ink-lo)" title="3-month window, 3-month lag — Boosted Tree — 52.1%"><span class="hm__v">52.1%</span><span class="hm__m">3-month</span></div>
                   <div class="hm__cell" style="background:var(--r3);color:var(--r-ink-lo)" title="3-month window, 6-month lag — Linear Discriminant — 58.3%"><span class="hm__v">58.3%</span><span class="hm__m">6-month</span></div>
                   <div class="hm__cell" style="background:var(--r4);color:var(--r-ink-lo)" title="3-month window, 12-month lag — Kernel Naive Bayes — 66.7%"><span class="hm__v">66.7%</span><span class="hm__m">12-month</span></div>
                 </div>
 
-                <div class="hm__row">
-                  <div class="hm__rowhead">6-month<br>window</div>
+                <div class="hm__row" data-heatmap-row="6-month">
+                  <div class="hm__rowhead">6 months</div>
                   <div class="hm__cell" style="background:var(--r4);color:var(--r-ink-lo)" title="6-month window, 1-month lag — Linear Discriminant — 64.2%"><span class="hm__v">64.2%</span><span class="hm__m">1-month</span></div>
                   <div class="hm__cell" style="background:var(--r2);color:var(--r-ink-lo)" title="6-month window, 3-month lag — Cubic SVM — 54.7%"><span class="hm__v">54.7%</span><span class="hm__m">3-month</span></div>
                   <div class="hm__cell" style="background:var(--r3);color:var(--r-ink-lo)" title="6-month window, 6-month lag — Fine Tree — 58.3%"><span class="hm__v">58.3%</span><span class="hm__m">6-month</span></div>
                   <div class="hm__cell" style="background:var(--r2);color:var(--r-ink-lo)" title="6-month window, 12-month lag — Coarse KNN — 52.1%"><span class="hm__v">52.1%</span><span class="hm__m">12-month</span></div>
                 </div>
 
-                <div class="hm__row">
-                  <div class="hm__rowhead">12-month<br>window</div>
+                <div class="hm__row" data-heatmap-row="12-month">
+                  <div class="hm__rowhead">12 months</div>
                   <div class="hm__cell" style="background:var(--r2);color:var(--r-ink-lo)" title="12-month window, 1-month lag — Coarse Gaussian SVM — 54.7%"><span class="hm__v">54.7%</span><span class="hm__m">1-month</span></div>
                   <div class="hm__cell" style="background:var(--r2);color:var(--r-ink-lo)" title="12-month window, 3-month lag — Coarse KNN — 52.8%"><span class="hm__v">52.8%</span><span class="hm__m">3-month</span></div>
                   <div class="hm__cell" style="background:var(--r2);color:var(--r-ink-lo)" title="12-month window, 6-month lag — RUSBoosted Tree — 54.2%"><span class="hm__v">54.2%</span><span class="hm__m">6-month</span></div>
@@ -406,7 +437,7 @@
 
             <details class="tablewrap">
               <summary>Data table</summary>
-              <table class="data">
+              <table class="data data--accuracy">
                 <caption class="visually-hidden">Forecast accuracy and best classifier by estimation window and forecast lag</caption>
                 <thead>
                   <tr><th scope="col">Window</th><th scope="col">Lag</th><th scope="col">Accuracy</th><th scope="col">Best model</th></tr>
@@ -468,6 +499,7 @@
             <details class="tablewrap">
               <summary>Data table</summary>
               <table class="data">
+                <caption class="visually-hidden">Confusion matrix counts for the Fine Tree model</caption>
                 <thead>
                   <tr><th scope="col">Actual</th><th scope="col">Predicted bear</th><th scope="col">Predicted bull</th></tr>
                 </thead>
@@ -485,16 +517,27 @@
             </p>
           </figure>
 
-        </div>
+            </div>
+          </div>
+        </details>
 
-        <p class="figure__note" style="border-top:0;padding-top:1.75rem;">
-          <strong style="color:var(--ink)">Honest limitations.</strong> The MST minimisation criterion did not
-          fully converge, so the trees may not be the most efficient representation of each network;
-          and several algorithm-partitioned regimes are only days long &mdash; artefacts of black-swan
-          events sitting too close to the following rally to be separately forecastable. Both are
-          named in the paper as the first things to fix. With 48 regimes in the sample, the
-          accuracy figures carry wide error bars either way.
-        </p>
+        <details class="research-detail">
+          <summary>
+            <span class="research-detail__index">03</span>
+            <span class="research-detail__title">Detailed limitations</span>
+            <span class="research-detail__meta">Convergence, regime definitions and sample size</span>
+          </summary>
+          <div class="research-detail__body">
+            <p class="research-limitations">
+              The MST minimisation criterion did not fully converge, so the trees may not be the
+              most efficient representation of each network; and several algorithm-partitioned
+              regimes are only days long &mdash; artefacts of black-swan events sitting too close to
+              the following rally to be separately forecastable. Both are named in the paper as
+              the first things to fix. With 48 regimes in the sample, the accuracy figures carry
+              wide error bars either way.
+            </p>
+          </div>
+        </details>
       </div>
     </article>
 
@@ -593,70 +636,80 @@
       </p>
     </div>
 
-    <div class="grid-3">
+    <div class="build-groups">
+      <section class="build-group reveal" aria-labelledby="build-analysis">
+        <p class="build-group__num">01 / Workflow</p>
+        <h3 class="build-group__title" id="build-analysis">Portfolio analysis</h3>
+        <div class="build-group__tools">
+          <article class="build-tool">
+            <h4>Scenario extraction</h4>
+            <p>
+              Rules-based extraction and validation of trading scenarios from structured advisor
+              notes &mdash; regex parsing with error handling, so an ambiguous instruction is flagged
+              rather than silently misread.
+            </p>
+            <div class="tags"><span class="tag">Python</span><span class="tag">Regex</span><span class="tag">Validation</span></div>
+          </article>
 
-      <article class="card reveal">
-        <p class="card__num" data-auto></p>
-        <h3>Scenario extraction</h3>
-        <p>
-          Rules-based extraction and validation of trading scenarios from structured advisor
-          notes &mdash; regex parsing with error handling, so an ambiguous instruction is flagged
-          rather than silently misread.
-        </p>
-        <div class="tags"><span class="tag">Python</span><span class="tag">Regex</span><span class="tag">Validation</span></div>
-      </article>
+          <article class="build-tool">
+            <h4>Reconstitution analytics</h4>
+            <p>
+              Benchmark reconstitution impact analysis &mdash; adds and drops, resulting turnover,
+              and impacted SMAs.
+            </p>
+            <div class="tags"><span class="tag">Index Events</span><span class="tag">Turnover</span><span class="tag">Prioritisation</span></div>
+          </article>
+        </div>
+      </section>
 
-      <article class="card reveal">
-        <p class="card__num" data-auto></p>
-        <h3>Reconstitution analytics</h3>
-        <p>
-          Benchmark reconstitution impact analysis &mdash; adds and drops, resulting turnover, and
-          impacted SMAs.
-        </p>
-        <div class="tags"><span class="tag">Index Events</span><span class="tag">Turnover</span><span class="tag">Prioritisation</span></div>
-      </article>
+      <section class="build-group reveal" aria-labelledby="build-validation">
+        <p class="build-group__num">02 / Workflow</p>
+        <h3 class="build-group__title" id="build-validation">Data validation</h3>
+        <div class="build-group__tools">
+          <article class="build-tool">
+            <h4>Restriction consistency</h4>
+            <p>
+              Consistency checks across securities and screening groups using hash-table comparison.
+            </p>
+            <div class="tags"><span class="tag">Hash Tables</span><span class="tag">Compliance</span><span class="tag">Screening</span></div>
+          </article>
 
-      <article class="card reveal">
-        <p class="card__num" data-auto></p>
-        <h3>PM&ndash;advisor email generator</h3>
-        <p>
-          The shipped form of the scenario template library: portfolio-manager correspondence to
-          financial advisors, drafted from copilot-summarised, categorised templates matched to
-          the recurring trade and portfolio-analysis scenarios behind it.
-        </p>
-        <div class="tags"><span class="tag">LLM Summarisation</span><span class="tag">Templating</span></div>
-      </article>
+          <article class="build-tool">
+            <h4>Market data integrity</h4>
+            <p>
+              Dashboards tracking ingestion readiness and quality across the benchmark universe,
+              reconciling corporate actions against Bloomberg, FactSet and Refinitiv.
+            </p>
+            <div class="tags"><span class="tag">Python</span><span class="tag">SQL</span><span class="tag">Corporate Actions</span></div>
+          </article>
+        </div>
+      </section>
 
-      <article class="card reveal">
-        <p class="card__num" data-auto></p>
-        <h3>Restriction consistency</h3>
-        <p>
-          Consistency checks across securities and screening groups using hash-table comparison.
-        </p>
-        <div class="tags"><span class="tag">Hash Tables</span><span class="tag">Compliance</span><span class="tag">Screening</span></div>
-      </article>
+      <section class="build-group reveal" aria-labelledby="build-coordination">
+        <p class="build-group__num">03 / Workflow</p>
+        <h3 class="build-group__title" id="build-coordination">Workflow coordination</h3>
+        <div class="build-group__tools">
+          <article class="build-tool">
+            <h4>PM&ndash;advisor email generator</h4>
+            <p>
+              The shipped form of the scenario template library: portfolio-manager correspondence
+              to financial advisors, drafted from copilot-summarised, categorised templates matched
+              to the recurring trade and portfolio-analysis scenarios behind it.
+            </p>
+            <div class="tags"><span class="tag">LLM Summarisation</span><span class="tag">Templating</span></div>
+          </article>
 
-      <article class="card reveal">
-        <p class="card__num" data-auto></p>
-        <h3>Trade status reporting</h3>
-        <p>
-          A distributive trade status reporting system with automated scheduling and validation
-          checks, streamlining the communication loop between portfolio managers and traders on
-          what has actually filled.
-        </p>
-        <div class="tags"><span class="tag">Scheduling</span><span class="tag">Validation</span><span class="tag">PM &harr; Trader</span></div>
-      </article>
-
-      <article class="card reveal">
-        <p class="card__num" data-auto></p>
-        <h3>Market data integrity</h3>
-        <p>
-          Dashboards tracking ingestion readiness and quality across the benchmark universe,
-          reconciling corporate actions against Bloomberg, FactSet and Refinitiv.
-        </p>
-        <div class="tags"><span class="tag">Python</span><span class="tag">SQL</span><span class="tag">Corporate Actions</span></div>
-      </article>
-
+          <article class="build-tool">
+            <h4>Trade status reporting</h4>
+            <p>
+              A distributive trade status reporting system with automated scheduling and validation
+              checks, streamlining the communication loop between portfolio managers and traders on
+              what has actually filled.
+            </p>
+            <div class="tags"><span class="tag">Scheduling</span><span class="tag">Validation</span><span class="tag">PM &harr; Trader</span></div>
+          </article>
+        </div>
+      </section>
     </div>
   </div>
 </section>
@@ -711,16 +764,18 @@
       </div>
     </div>
 
-    <div class="section__head reveal" style="margin-top:clamp(4rem,9vw,7rem);">
+    <div class="section__head subsection-head reveal">
       <p class="eyebrow" data-auto>Education</p>
       <h2>Statistics, Economics, and a <em>Psychology</em> habit.</h2>
     </div>
 
-    <div class="grid-2">
-      <article class="card reveal">
-        <p class="card__num">/ MAY 2022</p>
-        <h3>MS, Statistical Science</h3>
-        <p style="color:var(--ink);font-weight:600;margin-bottom:0.75rem;">Duke University</p>
+    <div class="education">
+      <article class="education-card reveal">
+        <p class="education-card__institution">Duke University</p>
+        <div class="education-card__degree">
+          <h3>MS, Statistical Science</h3>
+          <p class="education-card__date">/ MAY 2022</p>
+        </div>
         <p>
           Teaching Assistant for data science courses at the Fuqua School of Business and the
           Department of Statistical Science. Research Assistant at the Center for Advanced
@@ -728,13 +783,16 @@
         </p>
       </article>
 
-      <article class="card reveal">
-        <p class="card__num">/ MAY 2020</p>
-        <h3>BA, Economics &mdash; Highest Honors</h3>
-        <p style="color:var(--ink);font-weight:600;margin-bottom:0.75rem;">University of North Carolina at Chapel Hill</p>
+      <article class="education-card reveal">
+        <p class="education-card__institution">University of North Carolina at Chapel Hill</p>
+        <div class="education-card__degree">
+          <h3>BA, Economics <span>&mdash; Highest Honors</span></h3>
+          <p class="education-card__date">/ MAY 2020</p>
+        </div>
         <p>
-          Second major in Psychology, minor in Mathematics. Graduated with Highest Distinction
-          and the <a href="https://econ.unc.edu/undergraduate/research/research-awards/" rel="noopener" target="_blank">Herbert Brown Mayo Financial Economics Research Fellowship</a>.
+          Second major in Psychology, minor in Mathematics. Graduated with
+          <strong>Highest Distinction</strong> and the
+          <a href="https://econ.unc.edu/undergraduate/research/research-awards/" rel="noopener" target="_blank">Herbert Brown Mayo Financial Economics Research Fellowship</a>.
         </p>
       </article>
     </div>
@@ -744,10 +802,10 @@
       <h2>Endurance, mostly.</h2>
     </div>
 
-    <div class="stats reveal">
-      <div class="stat"><div class="stat__val">2025</div><div class="stat__lab">NYC Marathon<br>finisher</div></div>
-      <div class="stat"><div class="stat__val">2024</div><div class="stat__lab">Spartan Race<br>Trifecta medalist</div></div>
-      <div class="stat"><div class="stat__val">2023</div><div class="stat__lab">Savage Race<br>Syndicate medalist</div></div>
+    <div class="stats stats--achievements reveal">
+      <div class="stat achievement"><div class="stat__val">2025</div><div class="stat__lab"><span>NYC Marathon</span><span>finisher</span></div></div>
+      <div class="stat achievement"><div class="stat__val">2024</div><div class="stat__lab"><span>Spartan Race</span><span>Trifecta medalist</span></div></div>
+      <div class="stat achievement"><div class="stat__val">2023</div><div class="stat__lab"><span>Savage Race</span><span>Syndicate medalist</span></div></div>
     </div>
 
   </div>
@@ -798,6 +856,7 @@
 </footer>
 
 <script src="assets/js/main.js" defer></script>
+<script src="assets/js/research.js" defer></script>
 <script src="assets/js/network.js" defer></script>
 <script src="assets/js/viz-core.js" defer></script>
 <script src="assets/js/frontier.js" defer></script>

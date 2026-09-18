@@ -77,9 +77,13 @@
     var x = Math.max(W * 0.54, edge + 56);
     var w = W - 40 - x;
     if (w < 240) return null;
-    // Height from the shallow band above the paper card, which is opaque and
-    // starts about a sixth of the way down a section that runs long past it.
-    return { x: x, y: 40, w: w, h: Math.min(H * 0.095, w / 1.15, 380) };
+    // Research details expand below this top band. Size the tree from the
+    // measured introduction rather than the section's changing total height.
+    var y = 40;
+    var bottom = k ? k.y + k.h + 40 : H - 40;
+    var h = Math.min(bottom - y, H - 80, w / 1.15, 380);
+    if (h < 150) return null;
+    return { x: x, y: y, w: w, h: h };
   }
 
   /* ---------- The tree ---------------------------------------------------- */

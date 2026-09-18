@@ -15,6 +15,7 @@ served directly by GitHub Pages.
 index.html               the whole site — one page, eight sections
 assets/css/style.css     design tokens + all styles (light & dark)
 assets/js/main.js        theme toggle, nav, scroll-spy, reveals, email assembly
+assets/js/research.js    narrow-screen selector for the research heatmap
 assets/js/network.js     hero canvas — live minimum spanning tree
 assets/js/viz-core.js    shared harness for canvas backgrounds (FZViz.mount)
 assets/js/frontier.js    about canvas — live mean-variance efficient frontier

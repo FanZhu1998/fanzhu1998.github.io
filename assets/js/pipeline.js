@@ -69,7 +69,8 @@
   /* ---------- State ------------------------------------------------------- */
 
   var NN = NODES.length, NL = LINKS.length;
-  var vol = new Float64Array(NL), lw = new Float64Array(NL), lp = new Float64Array(NL);
+  var vol = new Float64Array(NL), raw = new Float64Array(NL);
+  var lw = new Float64Array(NL), lp = new Float64Array(NL);
   var lx0 = new Float64Array(NL), ly0 = new Float64Array(NL);
   var lx1 = new Float64Array(NL), ly1 = new Float64Array(NL), lth = new Float64Array(NL);
   var pph = new Float64Array(NL * MAXP), plat = new Float64Array(NL * MAXP);
@@ -84,6 +85,19 @@
   var batches = [];
   var nextBatch = 0, lastT = 0;
   var pt = [0, 0];
+
+  /* Index the DAG once. Responsive resizes then reuse the same graph, and the
+     per-frame volume pass stays linear without allocating temporary arrays. */
+  var outLinks = new Array(NN), hasIn = new Uint8Array(NN), NC = 0;
+  var ni, lr;
+  for (ni = 0; ni < NN; ni++) {
+    outLinks[ni] = [];
+    if (NODES[ni].c + 1 > NC) NC = NODES[ni].c + 1;
+  }
+  for (lr = 0; lr < NL; lr++) {
+    outLinks[LINKS[lr][0]].push(lr);
+    hasIn[LINKS[lr][1]] = 1;
+  }
 
   function rnd(a, b) { return a + Math.random() * (b - a); }
   function clamp(v, a, b) { return v < a ? a : v > b ? b : v; }
@@ -116,39 +130,74 @@
 
   /* ---------- Layout ------------------------------------------------------ */
 
-  /* A Sankey every frame: volumes from their drift, node heights from the
-     volumes on one common scale, nodes stacked and centred in each column,
-     ports stacked on each node in link order. Seventeen links; nothing here
-     is worth caching. */
-  function layout(R, t) {
-    var i, r, c, L;
+  /* Raw link weights breathe independently, then volume moves through the DAG
+     column by column. Every internal node sends on exactly what it receives. */
+  function updateVolumes(t) {
+    var i, r, c, j, L, outs, v;
 
     for (r = 0; r < NL; r++) {
       L = LINKS[r];
-      var v = L[2] * (1 + 0.18 * Math.sin(t * lw[r] + lp[r]));
+      v = L[2] * (1 + 0.18 * Math.sin(t * lw[r] + lp[r]));
       // The exceptions carry the fail rate, not a drift of their own.
       if (L[1] === EXC) v = L[2] * failRate(L[0] - 4, t) / 0.05;
-      vol[r] = v;
+      raw[r] = v;
     }
 
-    nin.fill(0); nout.fill(0);
-    for (r = 0; r < NL; r++) { nout[LINKS[r][0]] += vol[r]; nin[LINKS[r][1]] += vol[r]; }
+    /* Treat each node's incoming volume as its outgoing budget. Raw weights
+       still control the animated split; the final link takes the remainder
+       so floating-point rounding cannot leave a hairline gap at the node. */
+    vol.fill(0); nin.fill(0); nout.fill(0);
+    for (c = 0; c < NC; c++) {
+      for (i = 0; i < NN; i++) {
+        if (NODES[i].c !== c) continue;
+        outs = outLinks[i];
+        if (!outs.length) continue;
+
+        var weight = 0;
+        for (j = 0; j < outs.length; j++) weight += raw[outs[j]];
+        if (!(weight > 0)) continue;
+
+        var available = hasIn[i] ? nin[i] : weight;
+        var remaining = available;
+        for (j = 0; j < outs.length; j++) {
+          r = outs[j];
+          L = LINKS[r];
+          v = j === outs.length - 1 ? remaining : available * raw[r] / weight;
+          remaining -= v;
+          vol[r] = v;
+          nout[i] += v;
+          nin[L[1]] += v;
+        }
+      }
+    }
+  }
+
+  /* A Sankey every frame: node heights use one common scale, nodes remain
+     centred in their columns, and ports retain the documented link order. */
+  function layout(R, t) {
+    var i, r, c, L;
+
+    updateVolumes(t);
+
     for (i = 0; i < NN; i++) val[i] = nin[i] > nout[i] ? nin[i] : nout[i];
 
     var gap = clamp(R.h * 0.06, 6, 18);
     var scale = 1e9, total, n;
-    for (c = 0; c < 4; c++) {
+    for (c = 0; c < NC; c++) {
       total = 0; n = 0;
       for (i = 0; i < NN; i++) if (NODES[i].c === c) { total += val[i]; n++; }
+      if (!n) continue;
       var s = (R.h - gap * (n - 1)) / total;
       if (s < scale) scale = s;
     }
 
-    for (c = 0; c < 4; c++) {
+    var columnSpan = NC > 1 ? NC - 1 : 1;
+    for (c = 0; c < NC; c++) {
       total = 0; n = 0;
       for (i = 0; i < NN; i++) if (NODES[i].c === c) { total += val[i]; n++; }
+      if (!n) continue;
       var y = R.y + (R.h - (total * scale + gap * (n - 1))) / 2;
-      var x = R.x + (R.w - BAR) * c / 3;
+      var x = R.x + (R.w - BAR) * c / columnSpan;
       if (c === 1) x -= (MW - BAR) / 2;
       for (i = 0; i < NN; i++) {
         if (NODES[i].c !== c) continue;
